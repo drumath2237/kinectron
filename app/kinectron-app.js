@@ -801,6 +801,13 @@ function startSkeletonTracking() {
         if(body.tracked) {
           if (!sendAllBodies) {
             sendToPeer('trackedBodyFrame', body);
+            // SHAWN START
+            if (doRecord) {
+              body.record_startime = recordStartTime;
+              body.record_timestamp = Date.now() - recordStartTime;
+              bodyChunks.push(body);
+            }
+            // SHAWN END
           }
           for(var jointType in body.joints) {
             var joint = body.joints[jointType];
