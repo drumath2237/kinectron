@@ -1,4 +1,5 @@
-var kinectron = null;
+var kinectron1 = null;
+var kinectron2 = null;
 
 // Set depth width and height same Kinect 
 var DEPTHWIDTH = 512;
@@ -7,46 +8,67 @@ var DEPTHHEIGHT = 424;
 var depthBuffer;
 var renderer, camera, scene, controls;
 
-var particles = new THREE.Geometry();
+var particles1 = new THREE.Geometry();
+var particles2 = new THREE.Geometry();
 var colors = [];
 var numParticles = DEPTHWIDTH * DEPTHHEIGHT;
 
 var animFrame = null;
 var busy = false;
 
-var colorRenderer = null; 
+//var colorRenderer = null; 
 var webGLCanvas = null;
+
+window.addEventListener('keydown', function(){
+  kinectron1.stopAll();
+  //kinectron2.stopAll();
+
+});
 
 // Wait for page to load to create webgl canvas and Kinectron connection
 window.addEventListener('load', function() {
   // Create webgl canvas 
   webGLCanvas = document.getElementById('webGLCanvas');
-  colorRenderer = new ImageBufferRendererWebgl(webGLCanvas);
+  //colorRenderer = new ImageBufferRendererWebgl(webGLCanvas);
 
   // Create point cloud
-  initPointCloud();
+  initThreeJS();
 
   // Define and create an instance of kinectron
-  var kinectronIpAddress = ""; // FILL IN YOUR KINECTRON IP ADDRESS HERE
-  kinectron = new Kinectron("10.0.1.16");
+  //var kinectronIpAddress = ""; // FILL IN YOUR KINECTRON IP ADDRESS HERE
+  kinectron1 = new Kinectron();
+  //kinectron2 = new Kinectron("10.0.1.16");
 
   // Connect to the microstudio
   //kinectron = new Kinectron("kinectron.itp.tsoa.nyu.edu");
 
   // Connect remote to application
-  kinectron.makeConnection();
-  kinectron.startRawDepth(rdCallback);
+  kinectron1.makeConnection();
+  kinectron1.startRawDepth(rdCallback1);
+
+  //kinectron2.makeConnection();
+  //kinectron2.startRawDepth(rdCallback2);
+
+
+
 });
 
 // Run this callback each time Kinect data is received
-function rdCallback(dataReceived) {
+function rdCallback1(dataReceived) {
   depthBuffer = dataReceived;
 
   // Update point cloud based on incoming Kinect data
-  pointCloud(depthBuffer);
+  pointCloud(depthBuffer, particles1);
 }
 
-function initPointCloud(){ 
+function rdCallback2(dataReceived) {
+  depthBuffer = dataReceived;
+
+  // Update point cloud based on incoming Kinect data
+  //pointCloud(depthBuffer, particles2);
+}
+
+function initThreeJS(){ 
   // Create three.js renderer
   renderer = new THREE.WebGLRenderer( {
     canvas: document.getElementById('cloudCanvas'),
@@ -60,14 +82,19 @@ function initPointCloud(){
 
   // Create three.js scene
   scene = new THREE.Scene();
-  
-  createParticles();
+
+  // Load/create shaders
+
+
+
+  createParticles(particles1);
+  //createParticles(particles2);
   window.addEventListener( 'resize', onWindowResize, false );
   onWindowResize();   
   render();
 }
 
-function createParticles() {
+function createParticles(particles) {
 
   // Create particles
   for(var i = 0; i < numParticles; i++) {
@@ -80,14 +107,27 @@ function createParticles() {
     colors[i] = new THREE.Color(0xffffff);
   }
 
+    // Define a color-typed uniform
+  var uniforms = {  
+    myColor: { type: "c", value: new THREE.Color( 0xffffff ) },
+  };
+
+
+  var material = new THREE.ShaderMaterial({  
+    uniforms: uniforms,
+    //attributes: attributes,
+    vertexShader: document.getElementById('vertexShader').textContent,
+    fragmentShader: document.getElementById('fragmentShader').textContent
+  });
+
   // Add point cloud to scene
   particles.colors = colors;
-  var material = new THREE.PointsMaterial( { size: 1, vertexColors: THREE.VertexColors, transparent: true } );
+  //var material = new THREE.PointsMaterial( { size: 1, vertexColors: THREE.VertexColors, transparent: true } );
   mesh = new THREE.Points(particles, material);
   scene.add(mesh);
 }
 
-function pointCloud(depthBuffer) {
+function pointCloud(depthBuffer, particles) {
   if(busy) {
     return;
   }
@@ -96,7 +136,7 @@ function pointCloud(depthBuffer) {
 
   // Set desired depth resolution
   var nDepthMinReliableDistance = 500;
-  var nDepthMaxDistance = 4500;
+  var nDepthMaxDistance = 2000;
   var j = 0;
 
   // Match depth buffer info to each particle
