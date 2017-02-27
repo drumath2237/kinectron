@@ -215,6 +215,10 @@ Kinectron = function(arg1, arg2) {
             rawDepthChunks.push(recordedData);
           }
 
+          if (processedData) {
+            this.rawDepthCallback(processedData);  
+          }
+          
         break;
 
         case 'multiFrame':
