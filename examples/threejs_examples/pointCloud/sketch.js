@@ -28,7 +28,7 @@ window.addEventListener('load', function() {
 
   // Define and create an instance of kinectron
   var kinectronIpAddress = ""; // FILL IN YOUR KINECTRON IP ADDRESS HERE
-  kinectron = new Kinectron(kinectronIpAddress);
+  kinectron = new Kinectron();
 
   // Connect to the microstudio
   //kinectron = new Kinectron("kinectron.itp.tsoa.nyu.edu");
@@ -55,8 +55,8 @@ function initPointCloud(){
 
   // Create three.js camera and controls
   camera = new THREE.PerspectiveCamera( 40, renderer.domElement.width / renderer.domElement.height, 1, 10000 );
-  camera.position.set( 0, 300, 3000 );
-  controls = new THREE.TrackballControls( camera, renderer.domElement );
+  camera.position.set( 1, 300, -150 );
+  //controls = new THREE.TrackballControls( camera, renderer.domElement );
 
   // Create three.js scene
   scene = new THREE.Scene();
@@ -77,7 +77,7 @@ function createParticles() {
     particles.vertices.push(vertex);
 
     // Assign each particle a color
-    colors[i] = new THREE.Color(0xffffff);
+    colors[i] = new THREE.Color(0xededed);
   }
 
   // Add point cloud to scene
@@ -96,7 +96,7 @@ function pointCloud(depthBuffer) {
 
   // Set desired depth resolution
   var nDepthMinReliableDistance = 500;
-  var nDepthMaxDistance = 4500;
+  var nDepthMaxDistance = 2000;
   var j = 0;
 
   // Match depth buffer info to each particle
@@ -122,6 +122,6 @@ function onWindowResize(){
 // Render three.js scene
 function render() {
   renderer.render( scene, camera );
-  controls.update();
+  //controls.update();
   animFrame = requestAnimationFrame(render);
 }
