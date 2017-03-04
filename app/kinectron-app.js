@@ -918,7 +918,7 @@ function startKey() {
                 imageDataArray[i] = newPixelData[i];
               }
 
-              drawImageToCanvas('key', 'png');
+              drawImageToCanvas('key', 'webp', 0.5);
             }
           }
         }
@@ -1178,7 +1178,13 @@ function drawImageToCanvas(frameType, imageType, quality) {
 
 function packageData(frameType, outputCanvasData) {
   dataToSend = {'name': frameType, 'imagedata': outputCanvasData};
-  sendToPeer('frame', dataToSend);
+    // limit sending to 24 fps
+  if (Date.now() > sentTime + 40) {
+    sendToPeer('frame', dataToSend);
+  sentTime = Date.now();
+  }
+    
+  // sendToPeer('frame', dataToSend);
 }
 
 function processColorBuffer(newPixelData) {
