@@ -2,6 +2,7 @@ var os = require('os');
 
 var Kinect2 = require('kinect2');
 var kinect = new Kinect2();
+var refest = true; // TO RETURN OUTPUT CANVAS CORRECTLY 
 
 //  Create local peer server
 var PeerServer = require('peer').PeerServer;
@@ -887,6 +888,7 @@ function stopMulti() {
 
 function startKey() {
   console.log('starting key');
+  var toSend = {};
 
   resetCanvas('color');
   canvasState = 'color';
@@ -894,6 +896,8 @@ function startKey() {
 
   if(kinect.open()) {
       kinect.on('multiSourceFrame', function(frame) {
+        //console.log(frame);
+        //debugger;
 
         if(busy) {
           return;
@@ -911,14 +915,18 @@ function startKey() {
         else {
           if (closestBodyIndex > -1) {
             if (frame.bodyIndexColor.bodies[closestBodyIndex].buffer) {
+              
+              var joints = frame.body.bodies[closestBodyIndex].joints;
 
+              //console.log(leftHand, rightHand);
               newPixelData = frame.bodyIndexColor.bodies[closestBodyIndex].buffer;
 
               for (var i = 0; i < imageDataSize; i++) {
                 imageDataArray[i] = newPixelData[i];
               }
-
-              drawImageToCanvas('key', 'webp', 0.5);
+              toSend.img = drawImageToCanvas('key', 'webp', 0.5);
+              toSend.joints = joints;
+              sendToPeer('multiFrame', toSend);
             }
           }
         }
@@ -1170,6 +1178,8 @@ function drawImageToCanvas(frameType, imageType, quality) {
   if (multiFrame) {
     return outputCanvasData;
   } else if (rawDepth) {
+    return outputCanvasData;
+  } else if (refest) {
     return outputCanvasData;
   } else {
     packageData(frameType, outputCanvasData);
