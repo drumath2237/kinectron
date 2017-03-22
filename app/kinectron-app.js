@@ -851,11 +851,13 @@ function startSkeletonTracking() {
         if(body.tracked) {
           if (!sendAllBodies) {
             sendToPeer('trackedBodyFrame', body);
+            // SHAWN START
             if (doRecord) {
               body.record_startime = recordStartTime;
               body.record_timestamp = Date.now() - recordStartTime;
               bodyChunks.push(body);
             }
+            // SHAWN END
           }
 
           drawSkeleton(skeletonCanvas, skeletonContext, body, index);
