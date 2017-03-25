@@ -28,7 +28,7 @@ window.addEventListener('load', function() {
 
   // Define and create an instance of kinectron
   var kinectronIpAddress = ""; // FILL IN YOUR KINECTRON IP ADDRESS HERE
-  kinectron = new Kinectron("10.0.1.16");
+  kinectron = new Kinectron();
 
   // Connect to the microstudio
   //kinectron = new Kinectron("kinectron.itp.tsoa.nyu.edu");
