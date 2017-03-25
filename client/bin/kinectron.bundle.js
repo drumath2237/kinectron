@@ -251,7 +251,7 @@
 
 	        case 'rawDepth':
 	          var processedData = this._processRawDepth(data);
-<<<<<<< ef882ca40e65524217bb9ef8595b1247d9adf30f
+
 	          this.rawDepthCallback(processedData);
 
 	          if (doRecord) {
@@ -262,12 +262,10 @@
 	            rawDepthChunks.push(recordedData);
 	          }
 
-=======
 	          if (processedData) {
 	            this.rawDepthCallback(processedData);  
 	          }
 	          
->>>>>>> First tests
 	        break;
 
 	        case 'multiFrame':

@@ -205,7 +205,6 @@ Kinectron = function(arg1, arg2) {
 
         case 'rawDepth':
           var processedData = this._processRawDepth(data);
-          this.rawDepthCallback(processedData);
 
           if (doRecord) {
             var recordedData = {};
