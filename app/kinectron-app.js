@@ -732,9 +732,9 @@ function startRawDepth() {
       var rawDepthImg = drawImageToCanvas(rawDepthCanvas, rawDepthContext, 'rawDepth', 'webp', 1);
 
       // limit raw depth to 25 fps  
-      if (Date.now() > sentTime + 40) {
+      if (Date.now() > (sentTime + 40)) {
         sendToPeer('rawDepth', rawDepthImg);
-      sentTime = Date.now();
+        sentTime = Date.now();
       }
       
       busy = false;

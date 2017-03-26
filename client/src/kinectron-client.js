@@ -56,7 +56,7 @@ Kinectron = function(arg1, arg2) {
   var DEPTHHEIGHT = 424; 
   
   // Processing raw depth indicator
-  var busy = false;
+  this.busy = false;
 
   // Running multiframe indicator
   var multiFrame = false;
@@ -295,7 +295,7 @@ Kinectron = function(arg1, arg2) {
         break;
       }
     }.bind(this));
-  };
+  }.bind(this);
 
   // Changed RGB to Color to be consistent with SDK, RGB depricated 3/16/17
   this.startRGB = function(callback) {
@@ -583,27 +583,72 @@ Kinectron = function(arg1, arg2) {
     }
   };
 
+  var counter = 0;
+
   this._processRawDepth = function(data) {
-    if (busy) return;
-    busy = true;
+    // console.log(this);
+    // console.log(this.currentlyBusy());
+    if (this.currentlyBusy()) {
+      // console.log('returned because BUSY!');
+      return;
+    }
+    this._setBusy(true);
+
+    // function sleep(milliseconds) {
+    //   var start = new Date().getTime();
+    //   for (var i = 0; i < 1e7; i++) {
+    //     if ((new Date().getTime() - start) > milliseconds){
+    //       break;
+    //     }
+    //   }
+    // }
+
+    // sleep(2000);
+    // console.log(busy);
     var imageData;
-    var depthBuffer;
+    //var depthBuffer;
     var processedData = [];
 
-    hiddenImage.src = data;
+    var newImg = new Image();
+    newImg.src = data;
+    //hiddenImage.src = data;
     hiddenContext.clearRect(0, 0, hiddenContext.canvas.width, hiddenContext.canvas.height);
-    hiddenContext.drawImage(hiddenImage, 0, 0);
+    hiddenContext.drawImage(newImg, 0, 0);
     imageData = hiddenContext.getImageData(0, 0, hiddenContext.canvas.width, hiddenContext.canvas.height);
-    depthBuffer = imageData.data;
-
-    for(var i = 0; i < depthBuffer.length; i+=4) {
-      var depth = (depthBuffer[i+1] << 8) + depthBuffer[i]; //get uint16 data from buffer
-      processedData.push(depth);
+    //depthBuffer = imageData.data;
+    // var startTime = Date.now();
+    for(var i = 0; i < imageData.data.length; i+=16) {
+      processedData.push(
+        (imageData.data[i+1] << 8) + imageData.data[i],
+        (imageData.data[i+5] << 8) + imageData.data[i+4],
+        (imageData.data[i+9] << 8) + imageData.data[i+8],
+        (imageData.data[i+13] << 8) + imageData.data[i+12]
+      );
     }
+    // var processedTime = Date.now() - startTime;
 
-    busy = false;
+    // console.log('elapsed: ', processedTime);
+
+      
+
+    //   var depth = (imageData.data[i+1] << 8) + imageData.data[i]; //get uint16 data from buffer
+    //   processedData.push(depth);
+    // }
+    // this._setBusy(false);
+    setTimeout(function() {
+      this._setBusy(false);
+    }.bind(this));
+    // console.log(busy);
     return processedData;
-  };
+  }.bind(this);
+
+  this.currentlyBusy = function() {
+    return this.busy;
+  }.bind(this);
+
+  this._setBusy = function(value){
+    this.busy = value;
+  }.bind(this);
 
     // Toggle Recording
   this._record = function() {

@@ -1,4 +1,5 @@
-var kinectron = null;
+var kinectron1 = null;
+var kinectron2 = null;
 
 // Set depth width and height same Kinect 
 var DEPTHWIDTH = 512;
@@ -7,7 +8,6 @@ var NUMPARTICLES = DEPTHWIDTH * DEPTHHEIGHT;
 
 var busy = false;
 
-//var depthBuffer;
 var container, stats;
 
 var camera, scene, renderer;
@@ -16,29 +16,44 @@ var points;
 
 var controls;
 
+var points1;
+var points2;
+
+window.addEventListener('keydown', function(){
+  kinectron1.stopAll();
+  kinectron2.stopAll();
+
+});
+
 // Wait for page to load to create webgl canvas and Kinectron connection
 window.addEventListener('load', function() {
-  
   initThreeJs();
   animate();
 
   // Define and create an instance of kinectron
   //var kinectronIpAddress = ""; // FILL IN YOUR KINECTRON IP ADDRESS HERE
-  kinectron = new Kinectron();
+  kinectron1 = new Kinectron("10.0.1.14");
+  kinectron2 = new Kinectron("10.0.1.16");
 
   // Connect remote to application
-  kinectron.makeConnection();
-  kinectron.startRawDepth(rdCallback);
+  kinectron1.makeConnection();
+  kinectron1.startRawDepth(rdCallback1);
+
+  kinectron2.makeConnection();
+  kinectron2.startRawDepth(rdCallback2);
+
 });
 
 // Run this callback each time Kinect data is received
-function rdCallback(dataReceived) {
-  //var depthBuffer = dataReceived;
-
+function rdCallback1(dataReceived) {
   // Update point cloud based on incoming Kinect data
-  pointCloud(dataReceived);
+  pointCloud(dataReceived, points1);
 }
 
+function rdCallback2(dataReceived) {
+  // Update point cloud based on incoming Kinect data
+  pointCloud(dataReceived, points2);
+}
 
 function initThreeJs() {
 
@@ -53,7 +68,41 @@ function initThreeJs() {
   scene.fog = new THREE.Fog( 0x050505, 2000, 3500 );
 
   //
+  points1 = initPointCloudNew(0);
+  scene.add( points1 );
 
+  points2 = initPointCloudNew(1000);
+  scene.add( points2 );
+ 
+
+  //
+
+
+  renderer = new THREE.WebGLRenderer( { antialias: false } );
+  renderer.setClearColor( scene.fog.color );
+  renderer.setPixelRatio( window.devicePixelRatio );
+  renderer.setSize( window.innerWidth, window.innerHeight );
+
+  container.appendChild( renderer.domElement );
+
+
+  //
+
+  stats = new Stats();
+  container.appendChild( stats.dom );
+  controls = new THREE.TrackballControls( camera, renderer.domElement );
+
+
+  //
+
+  window.addEventListener( 'resize', onWindowResize, false );
+
+
+}
+
+
+
+function initPointCloudNew(offset) {
   var particles = NUMPARTICLES;
 
   var geometry = new THREE.BufferGeometry();
@@ -69,7 +118,7 @@ function initThreeJs() {
 
     // positions
 
-    var x =  i % DEPTHWIDTH - DEPTHWIDTH * 0.5;
+    var x =  (i % DEPTHWIDTH - DEPTHWIDTH * 0.5) + offset;
     var y = DEPTHHEIGHT - Math.floor(i / DEPTHWIDTH);
     var z = Math.random() * n - n2;
 
@@ -100,41 +149,16 @@ function initThreeJs() {
 
   var material = new THREE.PointsMaterial( { size: 15, vertexColors: THREE.VertexColors } );
 
-  points = new THREE.Points( geometry, material );
+  var points = new THREE.Points( geometry, material );
+  return points;
   //points.matrixAutoUpdate = true;
 
-  scene.add( points );
- // console.log(points);
- // debugger;
-
-  //
-
-
-  renderer = new THREE.WebGLRenderer( { antialias: false } );
-  renderer.setClearColor( scene.fog.color );
-  renderer.setPixelRatio( window.devicePixelRatio );
-  renderer.setSize( window.innerWidth, window.innerHeight );
-
-  container.appendChild( renderer.domElement );
-
-
-  //
-
-  stats = new Stats();
-  container.appendChild( stats.dom );
-  controls = new THREE.TrackballControls( camera, renderer.domElement );
-
-
-  //
-
-  window.addEventListener( 'resize', onWindowResize, false );
-
+  // scene.add( points );
 
 }
+ 
 
-
-function pointCloud(depthBuffer) {
-
+function pointCloud(depthBuffer, points) {
   if(busy) {
     return;
   }
@@ -143,12 +167,11 @@ function pointCloud(depthBuffer) {
 
   // Set desired depth resolution
   var nDepthMinReliableDistance = 500;
-  var nDepthMaxDistance = 4500;
+  var nDepthMaxDistance = 2000;
   var j = 0;
 
   // Match depth buffer info to each particle
-  for(var i = 0; i < depthBuffer.length; i++) {
-    
+  for(var i = 0; i < depthBuffer.length; i++) { 
 
     var depth = depthBuffer[i]; 
     if(depth <= nDepthMinReliableDistance || depth >= nDepthMaxDistance) depth = Number.MAX_VALUE; //push particles far far away so we don't see them
@@ -156,10 +179,8 @@ function pointCloud(depthBuffer) {
     j+=3;
   }
 
-  points.geometry.attributes.position.needsUpdate = true;
-
   // Update particles
-  //points.verticesNeedUpdate = true;
+  points.geometry.attributes.position.needsUpdate = true;
   busy = false;
 }
 
@@ -172,7 +193,6 @@ function onWindowResize(){
 
 // Three.js animate function
 function animate() {
-
   requestAnimationFrame( animate );
 
   render();
@@ -182,7 +202,6 @@ function animate() {
 
 // Render three.js scene
 function render() {
-
   controls.update();
 
   renderer.render( scene, camera );
