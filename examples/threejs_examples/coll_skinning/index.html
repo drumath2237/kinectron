@@ -83,13 +83,7 @@
 	    		
 
 				} );
-				// var fontLoader = new THREE.FontLoader();
-				// fontLoader.load('../shared/fonts/helvetiker_regular.typeface.json', function ( inFont ) {
-				// 		console.log('loaded');
-				// 		scene.add(inFont);
 
-				// 	}
-				// );
 
 				
 				var light = new THREE.DirectionalLight( 0xffffff, 1.5 );
@@ -174,14 +168,14 @@
 				  skeleton.bones[0].position.z = data.joints[3].cameraZ;
 
 					//neck - head
-				  skeleton.bones[12].position.x = data.joints[2].cameraX;
-				  skeleton.bones[12].position.y = data.joints[2].cameraY; 
-				  skeleton.bones[12].position.z = data.joints[2].cameraZ;
+				  // skeleton.bones[12].position.x = data.joints[2].cameraX;
+				  // skeleton.bones[12].position.y = data.joints[2].cameraY; 
+				  // skeleton.bones[12].position.z = data.joints[2].cameraZ;
 
 				  //spine - spine mid 
-				  skeleton.bones[19].position.x = data.joints[1].cameraX;
-				  skeleton.bones[19].position.y = data.joints[1].cameraY; 
-				  skeleton.bones[19].position.z = data.joints[1].cameraZ;
+				  // skeleton.bones[19].position.x = data.joints[1].cameraX;
+				  // skeleton.bones[19].position.y = data.joints[1].cameraY; 
+				  // skeleton.bones[19].position.z = data.joints[1].cameraZ;
 
 				  //l clavicle - shoulder left
 				  skeleton.bones[11].position.x = data.joints[4].cameraX;
@@ -194,14 +188,14 @@
 				  // skeleton.bones[10].position.z = data.joints[4].cameraZ;
 
 				  //l forearm - elbow left 
-				  skeleton.bones[9].position.x = data.joints[5].cameraX;
-				  skeleton.bones[9].position.y = data.joints[5].cameraY; 
-				  skeleton.bones[9].position.z = data.joints[5].cameraZ;
+				  // skeleton.bones[9].position.x = data.joints[5].cameraX;
+				  // skeleton.bones[9].position.y = data.joints[5].cameraY; 
+				  // skeleton.bones[9].position.z = data.joints[5].cameraZ;
 				  
 				  //l hand - hand left 
-				  skeleton.bones[8].position.x = data.joints[7].cameraX;
-				  skeleton.bones[8].position.y = data.joints[7].cameraY; 
-				  skeleton.bones[8].position.z = data.joints[7].cameraZ;
+				  // skeleton.bones[8].position.x = data.joints[7].cameraX;
+				  // skeleton.bones[8].position.y = data.joints[7].cameraY; 
+				  // skeleton.bones[8].position.z = data.joints[7].cameraZ;
 
 
 				  //r clavicle - shoulder right
@@ -215,54 +209,54 @@
 				  // skeleton.bones[5].position.z = data.joints[4].cameraZ;
 
 				  //r forearm - elbow right
-				  skeleton.bones[4].position.x = data.joints[9].cameraX;
-				  skeleton.bones[4].position.y = data.joints[9].cameraY; 
-				  skeleton.bones[4].position.z = data.joints[9].cameraZ;
+				  // skeleton.bones[4].position.x = data.joints[9].cameraX;
+				  // skeleton.bones[4].position.y = data.joints[9].cameraY; 
+				  // skeleton.bones[4].position.z = data.joints[9].cameraZ;
 				  
 				  //r hand - hand right
-				  skeleton.bones[3].position.x = data.joints[11].cameraX;
-				  skeleton.bones[3].position.y = data.joints[11].cameraY; 
-				  skeleton.bones[3].position.z = data.joints[11].cameraZ;
+				  // skeleton.bones[3].position.x = data.joints[11].cameraX;
+				  // skeleton.bones[3].position.y = data.joints[11].cameraY; 
+				  // skeleton.bones[3].position.z = data.joints[11].cameraZ;
 
 				  //l thigh - hip left
-				  skeleton.bones[18].position.x = data.joints[12].cameraX;
-				  skeleton.bones[18].position.y = data.joints[12].cameraY; 
-				  skeleton.bones[18].position.z = data.joints[12].cameraZ;
+				  // skeleton.bones[18].position.x = data.joints[12].cameraX;
+				  // skeleton.bones[18].position.y = data.joints[12].cameraY; 
+				  // skeleton.bones[18].position.z = data.joints[12].cameraZ;
 
 				  //l calf - knee left
-				  skeleton.bones[17].position.x = data.joints[13].cameraX;
-				  skeleton.bones[17].position.y = data.joints[13].cameraY; 
-				  skeleton.bones[17].position.z = data.joints[13].cameraZ;
+				  // skeleton.bones[17].position.x = data.joints[13].cameraX;
+				  // skeleton.bones[17].position.y = data.joints[13].cameraY; 
+				  // skeleton.bones[17].position.z = data.joints[13].cameraZ;
 
 				  //l foot - ankleleft
-				  skeleton.bones[16].position.x = data.joints[14].cameraX;
-				  skeleton.bones[16].position.y = data.joints[14].cameraY; 
-				  skeleton.bones[16].position.z = data.joints[14].cameraZ;
+				  // skeleton.bones[16].position.x = data.joints[14].cameraX;
+				  // skeleton.bones[16].position.y = data.joints[14].cameraY; 
+				  // skeleton.bones[16].position.z = data.joints[14].cameraZ;
 
 				  //l toe - footleft
-				  skeleton.bones[2].position.x = data.joints[15].cameraX;
-				  skeleton.bones[2].position.y = data.joints[15].cameraY; 
-				  skeleton.bones[2].position.z = data.joints[15].cameraZ;
+				  // skeleton.bones[2].position.x = data.joints[15].cameraX;
+				  // skeleton.bones[2].position.y = data.joints[15].cameraY; 
+				  // skeleton.bones[2].position.z = data.joints[15].cameraZ;
 
-				  //r thigh - hip right
-				  skeleton.bones[15].position.x = data.joints[16].cameraX;
-				  skeleton.bones[15].position.y = data.joints[16].cameraY; 
-				  skeleton.bones[15].position.z = data.joints[16].cameraZ;
+				  // //r thigh - hip right
+				  // skeleton.bones[15].position.x = data.joints[16].cameraX;
+				  // skeleton.bones[15].position.y = data.joints[16].cameraY; 
+				  // skeleton.bones[15].position.z = data.joints[16].cameraZ;
 
-				  //r calf - knee right
-				  skeleton.bones[14].position.x = data.joints[17].cameraX;
-				  skeleton.bones[14].position.y = data.joints[17].cameraY; 
-				  skeleton.bones[14].position.z = data.joints[17].cameraZ;
+				  // //r calf - knee right
+				  // skeleton.bones[14].position.x = data.joints[17].cameraX;
+				  // skeleton.bones[14].position.y = data.joints[17].cameraY; 
+				  // skeleton.bones[14].position.z = data.joints[17].cameraZ;
 
-				  //r foot - ankle right
-				  skeleton.bones[13].position.x = data.joints[18].cameraX;
-				  skeleton.bones[13].position.y = data.joints[18].cameraY; 
-				  skeleton.bones[13].position.z = data.joints[18].cameraZ;
+				  // //r foot - ankle right
+				  // skeleton.bones[13].position.x = data.joints[18].cameraX;
+				  // skeleton.bones[13].position.y = data.joints[18].cameraY; 
+				  // skeleton.bones[13].position.z = data.joints[18].cameraZ;
 
-				  //r toe - foot right
-				  skeleton.bones[7].position.x = data.joints[19].cameraX;
-				  skeleton.bones[7].position.y = data.joints[19].cameraY; 
-				  skeleton.bones[7].position.z = data.joints[19].cameraZ;
+				  // //r toe - foot right
+				  // skeleton.bones[7].position.x = data.joints[19].cameraX;
+				  // skeleton.bones[7].position.y = data.joints[19].cameraY; 
+				  // skeleton.bones[7].position.z = data.joints[19].cameraZ;
 
 }
 
