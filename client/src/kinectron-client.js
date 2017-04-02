@@ -56,7 +56,7 @@ Kinectron = function(arg1, arg2) {
   var DEPTHHEIGHT = 424; 
   
   // Processing raw depth indicator
-  this.busy = false;
+  var busy = false;
 
   // Running multiframe indicator
   var multiFrame = false;
@@ -583,72 +583,44 @@ Kinectron = function(arg1, arg2) {
     }
   };
 
-  var counter = 0;
-
   this._processRawDepth = function(data) {
-    // console.log(this);
-    // console.log(this.currentlyBusy());
-    if (this.currentlyBusy()) {
-      // console.log('returned because BUSY!');
+
+    // Use global busy variable 
+    if (busy) {
       return;
     }
-    this._setBusy(true);
 
-    // function sleep(milliseconds) {
-    //   var start = new Date().getTime();
-    //   for (var i = 0; i < 1e7; i++) {
-    //     if ((new Date().getTime() - start) > milliseconds){
-    //       break;
-    //     }
-    //   }
-    // }
+    busy = true; 
 
-    // sleep(2000);
-    // console.log(busy);
     var imageData;
-    //var depthBuffer;
     var processedData = [];
 
+    // Use local image object to pass data to canvas
     var newImg = new Image();
     newImg.src = data;
-    //hiddenImage.src = data;
+
+    // Use global hidden context to avoid creating new canvas each frame 
     hiddenContext.clearRect(0, 0, hiddenContext.canvas.width, hiddenContext.canvas.height);
     hiddenContext.drawImage(newImg, 0, 0);
     imageData = hiddenContext.getImageData(0, 0, hiddenContext.canvas.width, hiddenContext.canvas.height);
-    //depthBuffer = imageData.data;
-    // var startTime = Date.now();
-    for(var i = 0; i < imageData.data.length; i+=16) {
-      processedData.push(
-        (imageData.data[i+1] << 8) + imageData.data[i],
-        (imageData.data[i+5] << 8) + imageData.data[i+4],
-        (imageData.data[i+9] << 8) + imageData.data[i+8],
-        (imageData.data[i+13] << 8) + imageData.data[i+12]
-      );
+
+    // Remove depthBuffer variable to avoid duplicating buffer data 
+    for(var i = 0; i < imageData.data.length; i+=4) {
+      var depth = (imageData.data[i+1] << 8) + imageData.data[i]; //get uint16 data from buffer
+      processedData.push(depth);
     }
-    // var processedTime = Date.now() - startTime;
-
-    // console.log('elapsed: ', processedTime);
-
-      
-
-    //   var depth = (imageData.data[i+1] << 8) + imageData.data[i]; //get uint16 data from buffer
-    //   processedData.push(depth);
-    // }
-    // this._setBusy(false);
+ 
+    // Use setTimeout to clear the call stack
     setTimeout(function() {
-      this._setBusy(false);
-    }.bind(this));
-    // console.log(busy);
+      busy = false;
+    });
+
+    // Return the array of processed data
     return processedData;
-  }.bind(this);
 
-  this.currentlyBusy = function() {
-    return this.busy;
-  }.bind(this);
+  };
 
-  this._setBusy = function(value){
-    this.busy = value;
-  }.bind(this);
+
 
     // Toggle Recording
   this._record = function() {
