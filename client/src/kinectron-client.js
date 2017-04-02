@@ -3,7 +3,7 @@
 // Import Peer.js 
 var Peer = require('peerjs');
 
-Kinectron = function(arg1, arg2) {  
+Kinectron = function(arg1, arg2) {
   this.img = null;
   this.feed = null;
   this.body = null;
@@ -57,6 +57,7 @@ Kinectron = function(arg1, arg2) {
   
   // Processing raw depth indicator
   var busy = false;
+  var dcBusy = false;
 
   // Running multiframe indicator
   var multiFrame = false;
@@ -126,7 +127,16 @@ Kinectron = function(arg1, arg2) {
   hiddenContext.fillRect(0, 0, hiddenCanvas.width, hiddenCanvas.height);
   hiddenImage = document.createElement("img");
 
+  hiddenCanvas2 = document.createElement("canvas");
+  hiddenCanvas2.width = 512;
+  hiddenCanvas2.height = 424;
+  hiddenContext2 = hiddenCanvas2.getContext("2d");
+  hiddenContext2.fillStyle = 'red';
+  hiddenContext2.fillRect(0, 0, hiddenCanvas2.width, hiddenCanvas2.height);
+
+
   myDiv.appendChild(hiddenCanvas);
+ // myDiv.appendChild(hiddenCanvas2);
   myDiv.appendChild(hiddenImage);
 
   // Make peer connection
@@ -226,6 +236,11 @@ Kinectron = function(arg1, arg2) {
             data.rawDepth = processedRawDepthData;
            }
 
+          if(data.depthColor) {
+            var processedDepthColorData = this._processDepthColor(data.depthColor);
+            data.depthColor = processedDepthColorData;
+          } 
+
           if (this.multiFrameCallback) {
             this.multiFrameCallback(data);
 
@@ -253,6 +268,8 @@ Kinectron = function(arg1, arg2) {
                 recordedData2.record_timestamp = Date.now() - recordStartTime;
                 rawDepthChunks.push(recordedData2);
               }
+
+
             }
           } else {
             if (data.color) {
@@ -291,6 +308,13 @@ Kinectron = function(arg1, arg2) {
               }
             }
 
+            if (data.depthColor) {
+                var recordedData2 = {};
+                recordedData2.data = data.rawDepth;
+                recordedData2.record_startime = recordStartTime;
+                recordedData2.record_timestamp = Date.now() - recordStartTime;
+                rawDepthChunks.push(recordedData2);
+              }
           }
         break;
       }
@@ -584,39 +608,80 @@ Kinectron = function(arg1, arg2) {
   };
 
   this._processRawDepth = function(data) {
-
-    // Use global busy variable 
-    if (busy) {
+    if (this.currentlyBusy()) {
       return;
     }
 
-    busy = true; 
-
+    this._setBusy(true);
     var imageData;
     var processedData = [];
+
+    var newImg = new Image();
+    newImg.src = data;
+
+    newImg.onload = function () {
+      hiddenContext.clearRect(0, 0, hiddenContext.canvas.width, hiddenContext.canvas.height);
+      hiddenContext.drawImage(newImg, 0, 0);
+    }.bind(this);
+
+    imageData = hiddenContext.getImageData(0, 0, hiddenContext.canvas.width, hiddenContext.canvas.height);
+    
+    for(var i = 0; i < imageData.data.length; i+=4) {
+      var depth = (imageData.data[i+1] << 8) + imageData.data[i]; //get uint16 data from buffer
+      processedData.push(depth);
+    }
+
+    setTimeout(function() {
+      this._setBusy(false);
+    }.bind(this));
+
+    return processedData;
+  };
+
+  this.currentlyBusy = function() {
+    return this.busy;
+  }.bind(this);
+
+  this._setBusy = function(value){
+    this.busy = value;
+  }.bind(this);
+
+
+  this._processDepthColor = function(data) {
+
+    // Use global busy variable 
+    if (dcBusy) {
+      return;
+    }
+
+    dcBusy = true; 
+
+    var imageData;
+    //var processedData = [];
 
     // Use local image object to pass data to canvas
     var newImg = new Image();
     newImg.src = data;
 
-    // Use global hidden context to avoid creating new canvas each frame 
-    hiddenContext.clearRect(0, 0, hiddenContext.canvas.width, hiddenContext.canvas.height);
-    hiddenContext.drawImage(newImg, 0, 0);
-    imageData = hiddenContext.getImageData(0, 0, hiddenContext.canvas.width, hiddenContext.canvas.height);
+    newImg.onload = function () {
+      hiddenContext2.clearRect(0, 0, hiddenContext2.canvas.width, hiddenContext2.canvas.height);
+      hiddenContext2.drawImage(newImg, 0, 0);
+    }.bind(this);
 
-    // Remove depthBuffer variable to avoid duplicating buffer data 
-    for(var i = 0; i < imageData.data.length; i+=4) {
-      var depth = (imageData.data[i+1] << 8) + imageData.data[i]; //get uint16 data from buffer
-      processedData.push(depth);
-    }
+    imageData = hiddenContext2.getImageData(0, 0, hiddenContext2.canvas.width, hiddenContext2.canvas.height);
+
+    // for(var i = 0; i < imageData.data.length; i++) {
+    //    //get uint16 data from buffer
+    //   processedData.push(depth);
+    // }
  
     // Use setTimeout to clear the call stack
     setTimeout(function() {
-      busy = false;
+      dcBusy = false;
     });
 
     // Return the array of processed data
-    return processedData;
+    return imageData.data;
 
   };
 
@@ -693,7 +758,7 @@ Kinectron = function(arg1, arg2) {
       newHiddenCanvas.height = DEPTHHEIGHT;
     }
 
-    newHiddenContext = hiddenCanvas.getContext("2d");
+    newHiddenContext = newHiddenCanvas.getContext("2d");
     newHiddenContext.fillRect(0, 0, newHiddenCanvas.width, newHiddenCanvas.height);
     
     // Add canvas to hidden div

@@ -616,9 +616,9 @@ function chooseMulti(evt, incomingFrames) {
       //   multiFrames.push(Kinect2.FrameType.bodyIndexColor);
       // break;
 
-      // case 'depthColor':
-      //   multiFrames.push(Kinect2.FrameType.depthColor);
-      // break;
+      case 'depth-color':
+        multiFrames.push(Kinect2.FrameType.depthColor);
+      break;
 
       //infrared is not implemented for multiframe yet
       // case 'infrared': 
@@ -727,7 +727,6 @@ function startRawDepth() {
         return;
       }
       busy = true;
-     
       processRawDepthBuffer(newPixelData);
       var rawDepthImg = drawImageToCanvas(rawDepthCanvas, rawDepthContext, 'rawDepth', 'webp', 1);
 
@@ -971,21 +970,25 @@ function startMulti(multiFrames) {
         newPixelData = frame.rawDepth.buffer;
         processRawDepthBuffer(newPixelData);
         temp = drawImageToCanvas(rawDepthCanvas, rawDepthContext, null, 'webp', 1);
+
         multiToSend.rawDepth = temp;
       }
 
       // TO DO Integrate into interface  
-      // if (frame.depthColor) {
-      //   resetCanvas('depth');
-      //   canvasState = 'depth';
-      //   setImageData();
+      if (frame.depthColor) {
+        var depthColorCanvas = document.getElementById('depth-color-canvas');
+        var depthColorContext = depthColorCanvas.getContext('2d');
 
-      //   newPixelData = frame.depthColor.buffer;
-      //   processColorBuffer(newPixelData);
-      //   temp = drawImageToCanvas(null, 'jpeg');
-      //   multiToSend.depthColor = temp;
+        resetCanvas('depth');
+        canvasState = 'depth';
+        setImageData();
 
-      // }
+        newPixelData = frame.depthColor.buffer;
+        processColorBuffer(newPixelData);
+        temp = drawImageToCanvas(depthColorCanvas, depthColorContext, null, 'jpeg');
+        multiToSend.depthColor = temp;
+
+      }
 
       // function drawColorBuffer(imageBuffer) {
       //   if(busy) {
@@ -1016,6 +1019,8 @@ function startMulti(multiFrames) {
       // }
       
       // No Framerate limiting
+
+      //console.log(multiToSend);
       sendToPeer('multiFrame', multiToSend);
 
       busy = false;
