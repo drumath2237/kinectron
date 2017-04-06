@@ -36,8 +36,8 @@ window.addEventListener('load', function() {
 
   // Define and create an instance of kinectron
   //var kinectronIpAddress = ""; // FILL IN YOUR KINECTRON IP ADDRESS HERE
-  kinectron1 = new Kinectron();
-  kinectron2 = new Kinectron("10.0.1.16");
+  kinectron1 = new Kinectron("10.0.1.4");
+  kinectron2 = new Kinectron("10.0.1.14");
 
   // Connect to the microstudio
   //kinectron = new Kinectron("kinectron.itp.tsoa.nyu.edu");
@@ -83,18 +83,18 @@ function initPointCloud(){
   // Create three.js scene
   scene = new THREE.Scene();
   
-  createParticles(particles1);
-  createParticles(particles2);
+  createParticles(particles1, -500);
+  createParticles(particles2, 500);
   window.addEventListener( 'resize', onWindowResize, false );
   onWindowResize();   
   render();
 }
 
-function createParticles(particles) {
+function createParticles(particles, offset) {
 
   // Create particles
   for(var i = 0; i < numParticles; i++) {
-    var x = i % DEPTHWIDTH - DEPTHWIDTH * 0.5;
+    var x = (i % DEPTHWIDTH - DEPTHWIDTH * 0.5) + offset;
     var y = DEPTHHEIGHT - Math.floor(i / DEPTHWIDTH);
     var vertex = new THREE.Vector3(x, y, Math.random());
     particles.vertices.push(vertex);

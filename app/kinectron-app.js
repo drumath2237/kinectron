@@ -985,7 +985,7 @@ function startMulti(multiFrames) {
 
         newPixelData = frame.depthColor.buffer;
         processColorBuffer(newPixelData);
-        temp = drawImageToCanvas(depthColorCanvas, depthColorContext, null, 'jpeg');
+        temp = drawImageToCanvas(depthColorCanvas, depthColorContext, null, 'webp', 0.5);
         multiToSend.depthColor = temp;
 
       }

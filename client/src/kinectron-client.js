@@ -4,6 +4,7 @@
 var Peer = require('peerjs');
 
 Kinectron = function(arg1, arg2) {
+  this.ip = arg1;
   this.img = null;
   this.feed = null;
   this.body = null;
@@ -120,14 +121,16 @@ Kinectron = function(arg1, arg2) {
   // Used for raw depth processing. 
   // TO DO refactor: create dynamically in process raw depth
   hiddenCanvas = document.createElement("canvas");
+  hiddenCanvas.setAttribute("id", "12" + Date.now());
   hiddenCanvas.width = 512;
   hiddenCanvas.height = 424;
   hiddenContext = hiddenCanvas.getContext("2d");
   hiddenContext.fillStyle = 'green';
   hiddenContext.fillRect(0, 0, hiddenCanvas.width, hiddenCanvas.height);
-  hiddenImage = document.createElement("img");
+  // hiddenImage = document.createElement("img");
 
   hiddenCanvas2 = document.createElement("canvas");
+  hiddenCanvas2.setAttribute("id", "1234" + Date.now());
   hiddenCanvas2.width = 512;
   hiddenCanvas2.height = 424;
   hiddenContext2 = hiddenCanvas2.getContext("2d");
@@ -136,8 +139,10 @@ Kinectron = function(arg1, arg2) {
 
 
   myDiv.appendChild(hiddenCanvas);
- // myDiv.appendChild(hiddenCanvas2);
-  myDiv.appendChild(hiddenImage);
+  myDiv.appendChild(hiddenCanvas2);
+  console.log(hiddenCanvas);
+  console.log(hiddenCanvas2);
+  // myDiv.appendChild(hiddenImage);
 
   // Make peer connection
   this.makeConnection = function() {
