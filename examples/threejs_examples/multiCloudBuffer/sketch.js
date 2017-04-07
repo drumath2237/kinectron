@@ -32,17 +32,17 @@ window.addEventListener('load', function() {
 
   // Define and create an instance of kinectron
   //var kinectronIpAddress = ""; // FILL IN YOUR KINECTRON IP ADDRESS HERE
-  kinectron1 = new Kinectron("10.0.1.4");
+  kinectron1 = new Kinectron();
   console.log('4');
-  kinectron2 = new Kinectron("10.0.1.14");
+  //kinectron2 = new Kinectron("10.0.1.14");
 
   // Connect remote to application
   kinectron1.makeConnection();
-  //kinectron1.startMultiFrame(["raw-depth", "depth-color"], rdCallback1);
-  kinectron1.startRawDepth(rdCallback1);
+  kinectron1.startMultiFrame(["raw-depth", "depth-color"], rdCallback1);
+  //kinectron1.startRawDepth(rdCallback1);
 
-  kinectron2.makeConnection();
-  kinectron2.startRawDepth(rdCallback2);
+  //kinectron2.makeConnection();
+ // kinectron2.startRawDepth(rdCallback2);
 
    //kinectron2.startMultiFrame(["raw-depth", "depth-color"], rdCallback2);
 
@@ -55,12 +55,12 @@ window.addEventListener('load', function() {
 // Run this callback each time Kinect data is received
 function rdCallback1(dataReceived) {
   //img1.src = dataReceived.rawDepth;
-  pointCloud(dataReceived, points1);
+  //pointCloud(dataReceived, points1);
   //console.log(dataReceived);
   //debugger;
-  // if (dataReceived.rawDepth && dataReceived.depthColor) {
-  //   pointCloud(dataReceived.rawDepth, dataReceived.depthColor, points1);  
-  // }
+  if (dataReceived.rawDepth && dataReceived.depthColor) {
+    pointCloud(dataReceived.rawDepth, dataReceived.depthColor, points1);  
+  }
 
 
 }
@@ -184,7 +184,7 @@ function initPointCloudNew(offset) {
 }
  
 
-function pointCloud(depthBuffer, points) {
+function pointCloud(depthBuffer, colorBuffer, points) {
   if(busy) {
     return;
   }
@@ -212,20 +212,20 @@ function pointCloud(depthBuffer, points) {
     points.geometry.attributes.position.array[j+2] = (nDepthMaxDistance - depth) - 2000;
 
       //set color 
-      // var color = new THREE.Color();
+      var color = new THREE.Color();
 
-      // var vx = colorBuffer[k] / 255;
-      // var vy = colorBuffer[k+1] / 255;
-      // var vz = colorBuffer[k+2] / 255;
+      var vx = colorBuffer[k] / 255;
+      var vy = colorBuffer[k+1] / 255;
+      var vz = colorBuffer[k+2] / 255;
 
-      // color.setRGB( vx, vy, vz );
+      color.setRGB( vx, vy, vz );
 
-      // points.geometry.attributes.color.array[j] = color.r;
-      // points.geometry.attributes.color.array[j+1] = color.g;
-      // points.geometry.attributes.color.array[j+2] = color.b;
+      points.geometry.attributes.color.array[j] = color.r;
+      points.geometry.attributes.color.array[j+1] = color.g;
+      points.geometry.attributes.color.array[j+2] = color.b;
 
       j+=3;
-     // k+=4;
+      k+=4;
 
   }
 
