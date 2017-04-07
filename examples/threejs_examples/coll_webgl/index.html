@@ -1,48 +1,45 @@
 <!DOCTYPE html>
 <html lang="en">
 	<head>
-		<title>three.js webgl - collada - skinning</title>
+		<title>three.js webgl - collada</title>
 		<meta charset="utf-8">
 		<meta name="viewport" content="width=device-width, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0">
 		<style>
 			body {
-				color: #000;
-				font-family:Monospace;
-				font-size:13px;
-				text-align:center;
-
-				background-color: #000;
+				font-family: Monospace;
+				background-color: #000000;
 				margin: 0px;
 				overflow: hidden;
-			}...sha..sharedd
+			}
 
 			#info {
+				color: #fff;
 				position: absolute;
-				top: 0px; width: 100%;
-				padding: 5px;
+				top: 10px;
+				width: 100%;
+				text-align: center;
+				z-index: 100;
+				display:block;
+
 			}
 
-			a {
-
-				color: #f00;
-			}
-
+			a { color: skyblue }
 		</style>
 	</head>
 	<body>
-
-		<div id="container"></div>
-
 		<div id="info">
-		<a href="http://threejs.org" target="_blank">three.js</a> webgl - collada - skinning
+
 		</div>
+
 		<script src="https://itp.nyu.edu/kinectron/kinectron.bundle.js" type="text/javascript"></script>
 		<script src="../shared/three.min.js"></script>
 		<script src="../shared/loaders/collada/Animation.js"></script>
 		<script src="../shared/loaders/collada/AnimationHandler.js"></script>
 		<script src="../shared/loaders/collada/KeyFrameAnimation.js"></script>
 		<script src="../shared/loaders/ColladaLoader.js"></script>
-		<script src="../shared/OrbitControls.js"></script>
+				<script src="../shared/OrbitControls.js"></script>
+	
+
 		<script src="../shared/Detector.js"></script>
 		<script src="../shared/stats.min.js"></script>
 
@@ -51,94 +48,82 @@
 			if ( ! Detector.webgl ) Detector.addGetWebGLMessage();
 
 			var container, stats;
-			var camera, scene, renderer;
-			var clock = new THREE.Clock();
 
-			var joints = [];
-
-			var geo;
+			var camera, scene, renderer, objects;
+			var particleLight;
+			var dae;
 			var skeleton;
-			var fontGlo;
-
-			init();
-
-			function init() {
+			
+			var joints = [];
+			var offset = 10;
 
 
+			var loader = new THREE.ColladaLoader();
+			loader.options.convertUpAxis = true;
+			loader.load( '../shared/models/collada/osc_1/osc_1.dae', function ( collada ) {
 
-				container = document.getElementById( 'container' );
+				dae = collada.scene;
 
-				camera = new THREE.PerspectiveCamera( 25, window.innerWidth / window.innerHeight, 1, 10000 );
-				camera.position.set( -5, -5, 5 );
-				camera.up.set( 0, 0, 1 );
+				dae.traverse( function ( child ) {
 
-				scene = new THREE.Scene();
+					if ( child instanceof THREE.SkinnedMesh ) {
+						skeleton = child.skeleton;
 
+						var animation = new THREE.Animation( child, child.geometry.animation );
+						animation.play();
 
-				var fontLoader = new THREE.FontLoader();
-
-				fontLoader.load( '../shared/fonts/helvetiker_regular.typeface.json', function ( infont ) {
-					fontGlo = infont;
-					initModel();
-
-	    		
+					}
 
 				} );
 
+				//dae.scale.x = dae.scale.y = dae.scale.z = 0.0010;
+				dae.updateMatrix();
 
 
 				
-				var light = new THREE.DirectionalLight( 0xffffff, 1.5 );
-				light.position.set( 0, -4, -4 ).normalize();
-				scene.add( light );
 
-				renderer = new THREE.WebGLRenderer( { antialias: true } );
-				renderer.setClearColor( 0xfff4e5 );
-				renderer.setPixelRatio( window.devicePixelRatio );
-				renderer.setSize( window.innerWidth, window.innerHeight );
-				renderer.sortObjects = false;
-				container.appendChild( renderer.domElement );
-
-				stats = new Stats();
-				container.appendChild( stats.dom );
-				
-
-
-
-
-				controls = new THREE.OrbitControls( camera, renderer.domElement );
-				window.addEventListener( 'resize', onWindowResize, false );
-
+				init();
 				animate();
 
-			}
+			} );
 
+			function init() {
 
+				kinectron = new Kinectron("172.27.220.26");
 
-			function initModel() {
-				var loader = new THREE.ColladaLoader();
-				loader.load( "../shared/models/collada/avatar.dae", function ( collada ) {
-				
-					collada.scene.traverse( function ( child ) {
+  			kinectron.makeConnection();
+				kinectron.startTrackedBodies(drawJoints);
 
-						if ( child instanceof THREE.SkinnedMesh ) {
-							skeleton = child.skeleton;
-							console.log(child);
-							//debugger;
+				container = document.createElement( 'div' );
+				document.body.appendChild( container );
 
-							// geo = child.geometry;
-							// joints = child.geometry.bones;
-							
-							// var animation = new THREE.Animation( child, child.geometry.animation );
-							// animation.play();
+				camera = new THREE.PerspectiveCamera( 45, window.innerWidth / window.innerHeight, 1, 2000 );
+				camera.position.set( 2, 2, 3 );
 
-							camera.lookAt( child.position );
+				scene = new THREE.Scene();
 
-																						 // Create cubes for joints    
+				// Grid
+
+				var size = 14, step = 1;
+
+				var geometry = new THREE.Geometry();
+				var material = new THREE.LineBasicMaterial( { color: 0x303030 } );
+
+				for ( var i = - size; i <= size; i += step ) {
+
+					geometry.vertices.push( new THREE.Vector3( - size, - 0.04, i ) );
+					geometry.vertices.push( new THREE.Vector3(   size, - 0.04, i ) );
+
+					geometry.vertices.push( new THREE.Vector3( i, - 0.04, - size ) );
+					geometry.vertices.push( new THREE.Vector3( i, - 0.04,   size ) );
+
+				}
+
+			 // Create cubes for joints    
 			  for (var j = 0; j < 25; j++) {
 			    var material1 = new THREE.MeshPhongMaterial( { color: 0xff0000 }  );
 			    //var material = new THREE.MeshBasicMaterial({ color: 0x3b0160 });
-			    var geometry1 = new THREE.BoxGeometry( 0.1, 0.1, 0.1 );
+			    var geometry1 = new THREE.BoxGeometry( 1, 1, 1 );
 			    geometry1.applyMatrix( new THREE.Matrix4().makeTranslation( 0, 0, 0 ) );
 			    var mesh1 = new THREE.Mesh( geometry1, material1 );
 
@@ -146,7 +131,7 @@
 						var x1 = skeleton.bones[j].position.x;
 						var y1 = skeleton.bones[j].position.y;
 						var z1 = skeleton.bones[j].position.z;
-						console.log(j, x1, y1, z1);
+
 						mesh1.position.set(x1,y1,z1); 	
 					} else {
 						//mesh1.position.set(20,20,0);
@@ -157,46 +142,71 @@
 			    scene.add( mesh1 ); 
 			  }
 
-						}
+				
+				var line = new THREE.LineSegments( geometry, material );
+				scene.add( line );
 
-					} );
+				// Add the COLLADA
 
-					// console.log(loader);
-					// debugger;
+				scene.add( dae );
 
-					scene.add( collada.scene );
+				// particleLight = new THREE.Mesh( new THREE.SphereGeometry( 4, 8, 8 ), new THREE.MeshBasicMaterial( { color: 0xffffff } ) );
+				// scene.add( particleLight );
 
-				} );
+				// Lights
 
+				scene.add( new THREE.AmbientLight( 0xcccccc ) );
 
+				var directionalLight = new THREE.DirectionalLight(/*Math.random() * 0xffffff*/0xeeeeee );
+				directionalLight.position.x = Math.random() - 0.5;
+				directionalLight.position.y = Math.random() - 0.5;
+				directionalLight.position.z = Math.random() - 0.5;
+				directionalLight.position.normalize();
+				scene.add( directionalLight );
 
+				// var pointLight = new THREE.PointLight( 0xffffff, 4 );
+				// particleLight.add( pointLight );
 
+				renderer = new THREE.WebGLRenderer();
+				renderer.setPixelRatio( window.devicePixelRatio );
+				renderer.setSize( window.innerWidth, window.innerHeight );
+				container.appendChild( renderer.domElement );
 
+				stats = new Stats();
+				container.appendChild( stats.dom );
 
-				kinectron = new Kinectron();
+				//
 
-			  // Connect to the microstudio
-			  //kinectron = new Kinectron("kinectron.itp.tsoa.nyu.edu");
+				controls = new THREE.OrbitControls( camera, renderer.domElement );
 
-			  // Connect remote to application
-			  kinectron.makeConnection();
-			  //kinectron.startMultiFrame(["color", "depth"], changeCanvas);
-			  //kinectron.startTrackedBodies(drawJoints);
+				window.addEventListener( 'resize', onWindowResize, false );
 
 			}
 
 
+			function drawJoints(data) {	
 
-			function drawJoints(data) {
+			  for (var j = 0; j < joints.length; j++ ) {
+			    joints[j].position.x = data.joints[j].cameraX * window.innerWidth/100;
+			    joints[j].position.y = data.joints[j].cameraY * window.innerHeight/100+ offset;
+			    joints[j].position.z = 0;
+			    //joints[j].position.z = data.joints[j].cameraZ * -window.innerWidth/40;
+			    //joints[j].rotation.x = data.joints[j].orientationX;
+			    //joints[j].rotation.y = data.joints[j].orientationY;
+			    //joints[j].rotation.z = data.joints[j].orientationZ;
+			  }
+			
+
+
 					// pelvis - spine base 
-					skeleton.bones[20].position.x = data.joints[0].cameraX;
-				  skeleton.bones[20].position.y = data.joints[0].cameraY; 
-				  skeleton.bones[20].position.z = data.joints[0].cameraZ;
+					skeleton.bones[20].position.x = data.joints[0].cameraX * window.innerWidth/100;
+				  skeleton.bones[20].position.y = data.joints[0].cameraY  * window.innerWidth/100; 
+				  //skeleton.bones[20].position.z = data.joints[0].cameraZ;
 
 				  //head - head
-				  skeleton.bones[0].position.x = data.joints[3].cameraX;
-				  skeleton.bones[0].position.y = data.joints[3].cameraY; 
-				  skeleton.bones[0].position.z = data.joints[3].cameraZ;
+				  skeleton.bones[0].position.x = data.joints[3].cameraX  * window.innerWidth/100;
+				  skeleton.bones[0].position.y = data.joints[3].cameraY * window.innerWidth/100; 
+				  //skeleton.bones[0].position.z = data.joints[3].cameraZ;
 
 					//neck - head
 				  // skeleton.bones[12].position.x = data.joints[2].cameraX;
@@ -209,9 +219,9 @@
 				  // skeleton.bones[19].position.z = data.joints[1].cameraZ;
 
 				  //l clavicle - shoulder left
-				  skeleton.bones[11].position.x = data.joints[4].cameraX;
-				  skeleton.bones[11].position.y = data.joints[4].cameraY; 
-				  skeleton.bones[11].position.z = data.joints[4].cameraZ;
+				  skeleton.bones[11].position.x = data.joints[4].cameraX  * window.innerWidth/100;
+				  skeleton.bones[11].position.y = data.joints[4].cameraY  * window.innerWidth/100;
+				  //skeleton.bones[11].position.z = data.joints[4].cameraZ;
 
 				  // //l upperarm - shoulder left
 				  // skeleton.bones[10].position.x = data.joints[4].cameraX;
@@ -230,9 +240,9 @@
 
 
 				  //r clavicle - shoulder right
-				  skeleton.bones[6].position.x = data.joints[8].cameraX;
-				  skeleton.bones[6].position.y = data.joints[8].cameraY; 
-				  skeleton.bones[6].position.z = data.joints[8].cameraZ;
+				  skeleton.bones[6].position.x = data.joints[8].cameraX  * window.innerWidth/100;
+				  skeleton.bones[6].position.y = data.joints[8].cameraY * window.innerWidth/100;
+				 //skeleton.bones[6].position.z = data.joints[8].cameraZ;
 
 				  // r upperarm - shoulder right
 				  // skeleton.bones[5].position.x = data.joints[4].cameraX;
@@ -300,30 +310,40 @@
 
 			}
 
+			//
+
 			function animate() {
 
 
-				// if (joints.length > 0) {
+				requestAnimationFrame( animate );
 
-				// 	geo.verticesNeedUpdate = true;
-
-				// 	joints[0].pos[0] +=5;
-				// 	joints[1].pos[0] +=5;
-				// 	joints[2].pos[2] +=5;
-				// 	joints[4].pos[5] +=5;
-						
-				// }
-				requestAnimationFrame( animate, renderer.domElement );
-
-				THREE.AnimationHandler.update( clock.getDelta() );
-
-				renderer.render( scene, camera );
-
+				render();
 				stats.update();
 
 			}
 
-		</script>
+			//var clock = new THREE.Clock();
 
+			function render() {
+
+				// var timer = Date.now() * 0.0005;
+
+				// camera.position.x = Math.cos( timer ) * 10;
+				// camera.position.y = 2;
+				// camera.position.z = Math.sin( timer ) * 10;
+
+				camera.lookAt( scene.position );
+
+				// particleLight.position.x = Math.sin( timer * 4 ) * 3009;
+				// particleLight.position.y = Math.cos( timer * 5 ) * 4000;
+				// particleLight.position.z = Math.cos( timer * 4 ) * 3009;
+
+				//THREE.AnimationHandler.update( clock.getDelta() );
+
+				renderer.render( scene, camera );
+
+			}
+
+		</script>
 	</body>
 </html>
