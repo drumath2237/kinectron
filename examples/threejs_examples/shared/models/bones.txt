@@ -1,0 +1,85 @@
+Coll skinning dae three.js example
+Pelvis - 20
+Spine - 19
+Neck - 12
+Head - 0
+L_Clavicle - 11
+L_UpperArm - 10
+L_Forearm - 9
+L_Hand - 8
+R_Clavicle - 6
+R_UpperArm - 5
+R_Forearm - 4
+R_Hand - 3
+L_Thigh - 18
+L_Calf - 17
+L_Foot - 16
+L_Toe0 - 2
+R_Thigh - 15
+R_Calf - 14
+R_Foot - 13
+R_Toe0 - 7
+
+
+Mixamo -- OSC Model 
+0- Hips
+1- Left up leg
+2- Right up leg
+3 - Spine
+4 - Spine 1
+5 - Spine 2
+6 - Neck
+7 - Head 
+8 - Left Shoulder
+9 - Left Arm 
+10 - Right Shoulder
+11 - Right Arm 
+12 - Left Forearm 
+13 - Left Hand 
+14 - Left hand Thumb 1
+15 - Left Hand Thumb 2 
+16 - Left Hand Index 1 
+17 - Left Hand Pinky 1
+18 - Left Hand Thumb 3
+19 - Right Forearm 
+20 - Right Hand 
+21 - Right Hand Pinky 1
+22 - Right Hand Index 1
+23 - Right Hand Thumb 1 
+24 - Right Hand Thumb 2 
+25 - Right Hand Thumb 3
+
+
+Mixamo -- FuseModel 2
+0- Hips -- spine base 0
+1- Spine -- 
+3 - Spine 2 -- spine shoulder 20
+4 - Left Up Leg -- hip left 12
+5 - Right Up Leg -- hip right 16
+6 - Left Shoulder -- shoulder left 4
+7 - Neck -- neck 2
+8 - Right Shoulder -- shoulder right 8
+9 - Left Arm -- elbow left 5
+10 - Right Arm -- elbow right 9
+11 - Left Forearmarm -- wrist left 6
+12 - Left Hand -- hand left 7 
+13 - Right Forearm -- wrist right 10 
+14 - Right Hand -- hand right 11
+15 - Left Leg --knee left 13
+
+16 - Left Foot -- ankle left 14
+17 - Left Toe Base -- foot left 15
+18 - Right Leg -- right knee 17
+19 - Right Foot -- right ankle 18 
+20 - Right Toe base  -- right foot 19
+21 - Head -- head 3
+
+
+2- Spine 1 -- spine mid 1
+
+
+
+
+
+ 
+
