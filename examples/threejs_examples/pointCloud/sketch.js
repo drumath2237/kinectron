@@ -35,7 +35,9 @@ window.addEventListener('load', function() {
 
   // Connect remote to application
   kinectron.makeConnection();
-  kinectron.startRawDepth(rdCallback);
+  kinectron.startMultiFrame(["raw-depth", "depth-color"], rdCallback1);
+
+  //kinectron.startRawDepth(rdCallback);
 });
 
 // Run this callback each time Kinect data is received
@@ -44,6 +46,13 @@ function rdCallback(dataReceived) {
 
   // Update point cloud based on incoming Kinect data
   pointCloud(depthBuffer);
+}
+
+function rdCallback1(dataReceived) {
+  if (dataReceived.rawDepth && dataReceived.depthColor) {
+    pointCloud(dataReceived.rawDepth, dataReceived.depthColor);  
+  }
+
 }
 
 function initPointCloud(){ 
@@ -70,6 +79,7 @@ function initPointCloud(){
 function createParticles() {
 
   // Create particles
+  
   for(var i = 0; i < numParticles; i++) {
     var x = i % DEPTHWIDTH - DEPTHWIDTH * 0.5;
     var y = DEPTHHEIGHT - Math.floor(i / DEPTHWIDTH);
@@ -87,7 +97,7 @@ function createParticles() {
   scene.add(mesh);
 }
 
-function pointCloud(depthBuffer) {
+function pointCloud(depthBuffer, colorBuffer) {
   if(busy) {
     return;
   }
@@ -98,17 +108,25 @@ function pointCloud(depthBuffer) {
   var nDepthMinReliableDistance = 500;
   var nDepthMaxDistance = 4500;
   var j = 0;
+  var k = 0;
 
+  //console.log(depthBuffer);
+  //debugger;
   // Match depth buffer info to each particle
   for(var i = 0; i < depthBuffer.length; i++) {
     var depth = depthBuffer[i]; 
     if(depth <= nDepthMinReliableDistance || depth >= nDepthMaxDistance) depth = Number.MAX_VALUE; //push particles far far away so we don't see them
     particles.vertices[j].z = (nDepthMaxDistance - depth) - 2000;
+    particles.colors[j].r = colorBuffer[k]/255;
+    particles.colors[j].g = colorBuffer[k+1]/255;
+    particles.colors[j].b = colorBuffer[k+2]/255;
     j++;
+    k+=4;
   }
 
   // Update particles
   particles.verticesNeedUpdate = true;
+  particles.colorsNeedUpdate = true;
   busy = false;
 }
 

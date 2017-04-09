@@ -15,13 +15,13 @@ var camera, scene, renderer;
 var controls;
 
 var points1;
-//var points2;
+var points2;
 var img1;
 var img2;
 
 window.addEventListener('keydown', function(){
   kinectron1.stopAll();
-  //kinectron2.stopAll();
+  kinectron2.stopAll();
 
 });
 
@@ -79,27 +79,27 @@ function initThreeJs() {
 
   //
 
-  camera = new THREE.PerspectiveCamera( 40, window.innerWidth / window.innerHeight, 1, 10000 );
+  camera = new THREE.PerspectiveCamera( 27, window.innerWidth / window.innerHeight, 5, 10000 );
   camera.position.x = 0;
-  camera.position.y = 300;
+  camera.position.y = 1000;
   camera.position.z = 3000;
 
   scene = new THREE.Scene();
-  //scene.fog = new THREE.Fog( 0x050505, 2000, 3500 );
+  scene.fog = new THREE.Fog( 0x050505, 2000, 3500 );
 
   //
 
-  points1 = initPointCloudNew(0);
+  points1 = initPointCloudNew(-500);
   scene.add( points1 );
 
-  // points2 = initPointCloudNew(500);
-  // scene.add( points2 );
+  points2 = initPointCloudNew(500);
+  scene.add( points2 );
  
 
   //
 
 
-  renderer = new THREE.WebGLRenderer( { antialias: true } );
+  renderer = new THREE.WebGLRenderer( { antialias: false } );
   renderer.setClearColor( 0x000000 );
   renderer.setPixelRatio( window.devicePixelRatio );
   renderer.setSize( window.innerWidth, window.innerHeight );
@@ -134,6 +134,7 @@ function initPointCloudNew(offset) {
 
   var color = new THREE.Color();
 
+
   var material = new THREE.PointsMaterial( { size: 15, vertexColors: THREE.VertexColors } );
 
   var points = new THREE.Points( geometry, material );
@@ -146,7 +147,7 @@ function initPointCloudNew(offset) {
 
     var x =  (i % DEPTHWIDTH - DEPTHWIDTH * 0.5) + offset;
     var y = DEPTHHEIGHT - Math.floor(i / DEPTHWIDTH);
-    var z = 0;
+    var z = Math.random() * n - n2;
 
     positions[ i ]     = x;
     positions[ i + 1 ] = y;
@@ -256,7 +257,7 @@ function animate() {
 
 // Render three.js scene
 function render() {
-  renderer.render( scene, camera );
   controls.update();
-  animFrame = requestAnimationFrame(render);
+
+  renderer.render( scene, camera );
 }
