@@ -887,7 +887,13 @@ function startSkeletonTracking() {
   if(kinect.open()) {
     kinect.on('bodyFrame', function(bodyFrame){
       if(sendAllBodies) {
-        sendToPeer('bodyFrame', bodyFrame);
+        if (Date.now() > sentTime + 40) {
+          sendToPeer('bodyFrame', bodyFrame);
+        sentTime = Date.now();
+        }
+
+
+        //sendToPeer('bodyFrame', bodyFrame);
         if (doRecord) {
           bodyFrame.record_startime = recordStartTime;
           bodyFrame.record_timestamp = Date.now() - recordStartTime;
@@ -900,7 +906,11 @@ function startSkeletonTracking() {
       bodyFrame.bodies.forEach(function(body){
         if(body.tracked) {
           if (!sendAllBodies) {
-            sendToPeer('trackedBodyFrame', body);
+            if (Date.now() > sentTime + 40) {
+              sendToPeer('trackedBodyFrame', body);
+            sentTime = Date.now();
+            }
+            // sendToPeer('trackedBodyFrame', body);
             if (doRecord) {
               body.record_startime = recordStartTime;
               body.record_timestamp = Date.now() - recordStartTime;
@@ -1058,13 +1068,13 @@ function startMulti(multiFrames) {
       // }
 
       //Frame rate limiting
-      // if (Date.now() > sentTime + 40) {
-      //   sendToPeer('multiFrame', multiToSend);
-      //   sentTime = Date.now();
-      // }
+      if (Date.now() > sentTime + 40) {
+        sendToPeer('multiFrame', multiToSend);
+        sentTime = Date.now();
+      }
       
       // No Framerate limiting
-      sendToPeer('multiFrame', multiToSend);
+      //sendToPeer('multiFrame', multiToSend);
 
       busy = false;
 
@@ -1382,7 +1392,11 @@ function drawImageToCanvas(inCanvas, inContext, frameType, imageType, quality) {
 
 function packageData(frameType, outputCanvasData) {
   dataToSend = {'name': frameType, 'imagedata': outputCanvasData};
-  sendToPeer('frame', dataToSend);
+  if (Date.now() > sentTime + 40) {
+    sendToPeer('frame', dataToSend);
+  sentTime = Date.now();
+  }
+  //sendToPeer('frame', dataToSend);
 }
 
 function processColorBuffer(newPixelData) {
