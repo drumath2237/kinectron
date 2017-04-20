@@ -945,20 +945,6 @@ function startMulti(multiFrames) {
         multiToSend.body = frame.body.bodies;
       }
 
-      if (frame.depth) {
-        var depthCanvas = document.getElementById('depth-canvas');
-        var depthContext = depthCanvas.getContext('2d');
-        
-        resetCanvas('depth');
-        canvasState = 'depth';
-        setImageData();
-
-        newPixelData = frame.depth.buffer;
-        processDepthBuffer(newPixelData);
-        temp = drawImageToCanvas(depthCanvas, depthContext, null, 'jpeg');
-        multiToSend.depth = temp;
-      }
-
       if (frame.rawDepth) {
         var rawDepthCanvas = document.getElementById('raw-depth-canvas');
         var rawDepthContext = rawDepthCanvas.getContext('2d');
@@ -966,7 +952,7 @@ function startMulti(multiFrames) {
         resetCanvas('raw');
         canvasState = 'raw';
         setImageData();
-  
+      
         newPixelData = frame.rawDepth.buffer;
         processRawDepthBuffer(newPixelData);
         temp = drawImageToCanvas(rawDepthCanvas, rawDepthContext, null, 'webp', 1);
@@ -974,21 +960,67 @@ function startMulti(multiFrames) {
         multiToSend.rawDepth = temp;
       }
 
-      // TO DO Integrate into interface  
-      if (frame.depthColor) {
-        var depthColorCanvas = document.getElementById('depth-color-canvas');
-        var depthColorContext = depthColorCanvas.getContext('2d');
-
+      // makde rgbd
+      if (frame.depth && frame.depthColor) {
+        
         resetCanvas('depth');
         canvasState = 'depth';
         setImageData();
 
-        newPixelData = frame.depthColor.buffer;
-        processColorBuffer(newPixelData);
-        temp = drawImageToCanvas(depthColorCanvas, depthColorContext, null, 'webp', 0.5);
+        var j = 0;
+        for (var i = 0; i < imageDataSize; i+=4) {
+          imageDataArray[i] = frame.depthColor.buffer[i];
+          imageDataArray[i+1] = frame.depthColor.buffer[i+1];
+          imageDataArray[i+2] = frame.depthColor.buffer[i+2];
+          imageDataArray[i+3] = frame.depth.buffer[j]; // set alpha channel at full opacity
+          j++;
+        }
+
+        var depthColorCanvas = document.getElementById('depth-color-canvas');
+        var depthColorContext = depthColorCanvas.getContext('2d');
+        
+        temp = drawImageToCanvas(depthColorCanvas, depthColorContext, null, 'webp', 0.7);
         multiToSend.depthColor = temp;
 
+
+
+      } else {
+
+        if (frame.depth) {
+          console.log('i shouldnt be here');
+          var depthCanvas = document.getElementById('depth-canvas');
+          var depthContext = depthCanvas.getContext('2d');
+          
+          resetCanvas('depth');
+          canvasState = 'depth';
+          setImageData();
+
+          newPixelData = frame.depth.buffer;
+          processDepthBuffer(newPixelData);
+          temp = drawImageToCanvas(depthCanvas, depthContext, null, 'jpeg');
+          multiToSend.depth = temp;
+        }
+
+        if (frame.depthColor) {
+          console.log('i shouldnt be here');
+          var depthColorCanvas = document.getElementById('depth-color-canvas');
+          var depthColorContext = depthColorCanvas.getContext('2d');
+
+          resetCanvas('depth');
+          canvasState = 'depth';
+          setImageData();
+
+          newPixelData = frame.depthColor.buffer;
+          processColorBuffer(newPixelData);
+
+          temp = drawImageToCanvas(depthColorCanvas, depthColorContext, null, 'webp', 0.5);
+          multiToSend.depthColor = temp;
+
+        }
+
       }
+
+
 
       // function drawColorBuffer(imageBuffer) {
       //   if(busy) {
@@ -1013,15 +1045,15 @@ function startMulti(multiFrames) {
       // }
 
       //Frame rate limiting
-      // if (Date.now() > sentTime + 40) {
-      //   sendToPeer('multiFrame', multiToSend);
-      //   sentTime = Date.now();
-      // }
+      if (Date.now() > sentTime + 40) {
+        sendToPeer('multiFrame', multiToSend);
+        sentTime = Date.now();
+      }
       
       // No Framerate limiting
 
       //console.log(multiToSend);
-      sendToPeer('multiFrame', multiToSend);
+      //sendToPeer('multiFrame', multiToSend);
 
       busy = false;
 

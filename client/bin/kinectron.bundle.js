@@ -166,7 +166,7 @@
 
 	  // Used for raw depth processing. 
 	  // TO DO refactor: create dynamically in process raw depth
-	  hiddenCanvas = document.createElement("canvas");
+	  var hiddenCanvas = document.createElement("canvas");
 	  hiddenCanvas.setAttribute("id", "12" + Date.now());
 	  hiddenCanvas.width = 512;
 	  hiddenCanvas.height = 424;
@@ -175,7 +175,7 @@
 	  hiddenContext.fillRect(0, 0, hiddenCanvas.width, hiddenCanvas.height);
 	  // hiddenImage = document.createElement("img");
 
-	  hiddenCanvas2 = document.createElement("canvas");
+	  var hiddenCanvas2 = document.createElement("canvas");
 	  hiddenCanvas2.setAttribute("id", "1234" + Date.now());
 	  hiddenCanvas2.width = 512;
 	  hiddenCanvas2.height = 424;
@@ -287,13 +287,19 @@
 	            data.rawDepth = processedRawDepthData;
 	           }
 
-	          if(data.depthColor) {
-	            var processedDepthColorData = this._processDepthColor(data.depthColor);
-	            data.depthColor = processedDepthColorData;
-	          } 
+	          // if(data.depthColor) {
+	          //   var processedDepthColorData = this._processDepthColor(data.depthColor);
+	          //   data.depthColor = processedDepthColorData;
+	          // } 
 
 	          if (this.multiFrameCallback) {
 	            this.multiFrameCallback(data);
+	            // process rgbd
+	            // if (data.depthColor) {
+	            //   this.img.src = data.depthColor;
+	            //   this.multiFrameCallback(data);
+	            // }
+
 
 	            if (doRecord) {
 	              if (data.color) {
@@ -368,6 +374,7 @@
 	              }
 	          }
 	        break;
+
 	      }
 	    }.bind(this));
 	  }.bind(this);
@@ -3327,6 +3334,7 @@
 
 	    chunkInfo.data[data.n] = data.data;
 	    chunkInfo.count += 1;
+	    this._chunkedData[id] = chunkInfo;
 
 	    if (chunkInfo.total === chunkInfo.count) {
 	      // Clean up before making the recursive call to `_handleDataMessage`.
@@ -3337,7 +3345,7 @@
 	      this._handleDataMessage({data: data});
 	    }
 
-	    this._chunkedData[id] = chunkInfo;
+	    
 	    return;
 	  }
 
