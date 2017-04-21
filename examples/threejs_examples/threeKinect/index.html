@@ -59,8 +59,11 @@
 			uniform float pointSize;
 			uniform float zOffset;
 			uniform float xOffset;
+			uniform float xLeftClip;
+			uniform float xRightClip;
 
 			varying vec2 vUv;
+			varying float depth;
 
 			const float XtoZ = 1.11146; // tan( 1.0144686 / 2.0 ) * 2.0;
 			const float YtoZ = 0.83359; // tan( 0.7898090 / 2.0 ) * 2.0;
@@ -70,7 +73,7 @@
 				vUv = vec2( position.x / width, position.y / height );
 
 				vec4 color = texture2D( map, vUv );
-				float depth = color.w / 1.0;
+				depth = color.w / 1.0;
 				//float depth = ( color.r + color.g + color.b ) / 3.0;
 
 				// Projection code by @kcmic
@@ -93,13 +96,21 @@
 		<script id="fs" type="x-shader/x-fragment">
 
 			uniform sampler2D map;
+			uniform float xLeftClip;
+			uniform float xRightClip;
 
 			varying vec2 vUv;
 
 			void main() {
 
+				if ( vUv.x < xLeftClip ) discard;
+
+				if (vUv.x > xRightClip ) discard;
+
+				//if (depth > 10.0 ) discard;
+
 				vec4 color = texture2D( map, vUv );
-				gl_FragColor = vec4( color.r, color.g, color.b, 0.2 );
+				gl_FragColor = vec4( color.r, color.g, color.b, 1 );
 
 			}
 		</script>

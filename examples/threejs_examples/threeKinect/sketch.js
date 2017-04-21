@@ -110,7 +110,7 @@ function init() {
 	container.appendChild( stats.dom );
 
 	camera = new THREE.PerspectiveCamera( 50, window.innerWidth / window.innerHeight, 1, 10000 );
-	camera.position.set( 0, 0, 3000 );
+	camera.position.set( 0, 0, 7000 );
 
 	scene = new THREE.Scene();
   //scene.background = new THREE.Color( 0x0000ff );
@@ -194,7 +194,9 @@ function createKinectImg1() {
 
 				"pointSize":    { value: 2 },
 				"zOffset":      { value: 1000 },
-				"xOffset": 			{ value: -2000 }
+				"xOffset": 			{ value: -500 },
+        "xLeftClip":    { value: 0.2 }, //0.2
+        "xRightClip":   { value: 0.6 }  //0.6
 
 			},
 			vertexShader: document.getElementById( 'vs' ).textContent,
@@ -251,7 +253,9 @@ function createKinectImg2() {
 
 				"pointSize":    { value: 2 },
 				"zOffset":      { value: 1000 },
-				"xOffset": 			{ value: 2000 }
+				"xOffset": 			{ value: 500 },
+        "xLeftClip":    { value: 0.3 },
+        "xRightClip":   { value: 0.8 }
 
 			},
 			vertexShader: document.getElementById( 'vs' ).textContent,
