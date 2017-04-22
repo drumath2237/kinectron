@@ -980,6 +980,8 @@ function startMulti(multiFrames) {
         var depthColorContext = depthColorCanvas.getContext('2d');
         
         temp = drawImageToCanvas(depthColorCanvas, depthColorContext, null, 'webp', 0.7);
+
+        
         multiToSend.depthColor = temp;
 
 

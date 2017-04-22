@@ -18,7 +18,8 @@ var canvas2;
 var ctx2; 
 
 // set a fixed 2:1 for the images
-var CANVW = 512;
+var CANVW = 768;
+var KIMGW = 512;
 var CANVH = 424;
 var busy = false;
 
@@ -49,7 +50,7 @@ function changeCanvas1(data) {
 
   img1.onload = function() {
     ctx.clearRect(0, 0, CANVW, CANVH);
-    ctx.drawImage(img1,0,0, CANVW, CANVH);  
+    ctx.drawImage(img1,256,0, KIMGW, CANVH);  
   };
   
  	setTimeout(function() {
@@ -74,7 +75,7 @@ function changeCanvas2(data) {
 
   img2.onload = function() {
     ctx2.clearRect(0, 0, CANVW, CANVH);
-    ctx2.drawImage(img2,0,0, CANVW, CANVH); 
+    ctx2.drawImage(img2, 128, 0, KIMGW, CANVH); 
   };
 
   setTimeout(function() {
@@ -110,7 +111,7 @@ function init() {
 	container.appendChild( stats.dom );
 
 	camera = new THREE.PerspectiveCamera( 50, window.innerWidth / window.innerHeight, 1, 10000 );
-	camera.position.set( 0, 0, 7000 );
+	camera.position.set( 30, 13, 765 );
 
 	scene = new THREE.Scene();
   //scene.background = new THREE.Color( 0x0000ff );
@@ -118,7 +119,6 @@ function init() {
 	center.z = - 2000;
 
 	createKinectImg1();
-	createKinectImg2();
 
 	renderer = new THREE.WebGLRenderer({ alpha: true });
 	renderer.setPixelRatio( window.devicePixelRatio );
@@ -157,20 +157,37 @@ function createKinectImg1() {
 	//video = document.createElement( 'video' );
 	//video.addEventListener( 'loadedmetadata', function ( event ) {
 
-		// Setup canvas and context
+
+		// set clipping and dimensions
+		var width = 768, height = 424;
+		var nearClipping = 850, farClipping = 4000;
+
+		// Setup canvas and context for first kinect
 		canvas = document.getElementById('canvas1');    
 		canvas.width = CANVW;
 		canvas.height = CANVH;
 		ctx = canvas.getContext('2d');
 
+		// texture for kinect1
 		texture = new THREE.Texture(canvas);
 		texture.minFilter = THREE.NearestFilter;
 
-		var width = 512, height = 424;
-		var nearClipping = 850, farClipping = 4000;
+		// Setup canvas and context for kinect 2
+		canvas2 = document.getElementById('canvas2');    
+		canvas2.width = CANVW;
+		canvas2.height = CANVH;
+		ctx2 = canvas2.getContext('2d');
 
+		// texture for k 2
+		texture2 = new THREE.Texture(canvas2);
+		texture2.minFilter = THREE.NearestFilter;
+
+		//
+
+		// geo for both kinects
 		geometry = new THREE.BufferGeometry();
 
+		// verts for kinect1
 		var vertices = new Float32Array( width * height * 3 );
 
 		for ( var i = 0, j = 0, l = vertices.length; i < l; i += 3, j ++ ) {
@@ -180,24 +197,32 @@ function createKinectImg1() {
 
 		}
 
+		// vertices to first geometry
 		geometry.addAttribute( 'position', new THREE.BufferAttribute( vertices, 3 ) );
+
+		// 
+
+		// create shader material
 
 		material = new THREE.ShaderMaterial( {
 
 			uniforms: {
 
-				"map":          { value: texture },
+				"map1":         { value: texture2 },
+				"map2": 				{ value: texture }, 
 				"width":        { value: width },
 				"height":       { value: height },
 				"nearClipping": { value: nearClipping },
 				"farClipping":  { value: farClipping },
-				"dClipping": 		{ value: 0.45 },
+				"dClipping1": 	{ value: 0.45 },
+				"dClipping2":   { value : 0.6 },  
 
 				"pointSize":    { value: 2 },
 				"zOffset":      { value: 1000 },
-				"xOffset": 			{ value: -500 },
-        "xLeftClip":    { value: 0.2 }, //0.2
-        "xRightClip":   { value: 0.6 }  //0.6
+        "xLeftClip1":    { value: 0.4 }, //0.2
+        "xRightClip1":   { value: 0.65 },  //0.4
+        "xLeftClip2":    { value: 0.5 }, //0.5
+        "xRightClip2":   { value: 0.7 }  //0.7
 
 			},
 			vertexShader: document.getElementById( 'vs' ).textContent,
@@ -213,64 +238,6 @@ function createKinectImg1() {
 
 }
 
-function createKinectImg2() {
-	//video = document.createElement( 'video' );
-	//video.addEventListener( 'loadedmetadata', function ( event ) {
-
-		// Setup canvas and context
-		canvas2 = document.getElementById('canvas2');    
-		canvas2.width = CANVW;
-		canvas2.height = CANVH;
-		ctx2 = canvas2.getContext('2d');
-
-		texture2 = new THREE.Texture(canvas2);
-		texture2.minFilter = THREE.NearestFilter;
-
-		var width = 512, height = 424;
-		var nearClipping = 850, farClipping = 4000;
-
-		geometry2 = new THREE.BufferGeometry();
-
-		var vertices = new Float32Array( width * height * 3 );
-
-		for ( var i = 0, j = 0, l = vertices.length; i < l; i += 3, j ++ ) {
-
-			vertices[ i ] = j % width;
-			vertices[ i + 1 ] = Math.floor( j / width );
-
-		}
-
-		geometry2.addAttribute( 'position', new THREE.BufferAttribute( vertices, 3 ) );
-
-		material2 = new THREE.ShaderMaterial( {
-
-			uniforms: {
-
-				"map":          { value: texture2 },
-				"width":        { value: width },
-				"height":       { value: height },
-				"nearClipping": { value: nearClipping },
-				"farClipping":  { value: farClipping },
-				"dClipping": 		{ value: 0.6 },
-
-				"pointSize":    { value: 2 },
-				"zOffset":      { value: 1000 },
-				"xOffset": 			{ value: 500 },
-        "xLeftClip":    { value: 0.3 },
-        "xRightClip":   { value: 0.8 }
-
-			},
-			vertexShader: document.getElementById( 'vs' ).textContent,
-			fragmentShader: document.getElementById( 'fs' ).textContent,
-			blending: THREE.AdditiveBlending,
-			depthTest: false, depthWrite: false,
-			transparent: true
-
-		} );
-
-		mesh2 = new THREE.Points( geometry2, material2 );
-		scene.add( mesh2 );
-}
 
 
 function onWindowResize() {
