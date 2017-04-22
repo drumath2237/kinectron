@@ -85,11 +85,13 @@ function changeCanvas2(data) {
 
 }
 
-//var changeCanvas2 = _.throttled(changeCanvas2, 40);
+// Use '9' key to stop kinects from running 
+window.addEventListener('keydown', function(event){
+	if (event.keyCode === 57) {
+		  kinectron1.stopAll();
+		  kinectron2.stopAll();
+	}
 
-window.addEventListener('keydown', function(){
-  kinectron1.stopAll();
-  kinectron2.stopAll();
 
 });
 
@@ -98,14 +100,6 @@ function init() {
 
 	container = document.createElement( 'div' );
 	document.body.appendChild( container );
-
-  //img1 = document.getElementById('img1');
-  //img2 = document.getElementById('img2');
-
-	var info = document.createElement( 'div' );
-	info.id = 'info';
-	info.innerHTML = '<a href="http://threejs.org" target="_blank">three.js</a> - kinect';
-	document.body.appendChild( info );
 
 	stats = new Stats();
 	container.appendChild( stats.dom );
