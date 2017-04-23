@@ -4,19 +4,27 @@ var kinectron1, kinectron2;
 // lines for skeleton
 var lines1 = [];
 var lines2 = [];
+
+// triangles for skeleton
+var triangles1 = [];
+var triangles2= [];
+
+// connections
 var connectingLines = [];
 
 // material for skeleton lines
 var materialLine1;
 var materialLine2;
+var triangleMat1, triangleMat2;
 
 // do you want to see the skeleton? 
-var skeletonVisible = true;
-var connectionVisible = true;
-var xtraSkeleton = true;
+var skeletonVisible = false;
+var connectionVisible = false;
+var xtraSkeleton = false;
 
 var centralPos;
 
+var group;
 
 function initKinectron() {
 
@@ -36,13 +44,33 @@ function initKinectron() {
 		blending: THREE.AdditiveBlending
 	});
 
+	triangleMat1 = new THREE.MeshBasicMaterial( { 
+		color: 0x8080f0, 
+		side: THREE.DoubleSide,
+		blending: THREE.NormalBlending 
+	});
+
+	triangleMat2 = new THREE.MeshBasicMaterial( { 
+		color: 0x8080f0, 
+		side: THREE.DoubleSide,
+		blending: THREE.NormalBlending
+ 
+	});
+
 	// create skeletons
 	lines1 = initSkeleton(materialLine1);
 	lines2 = initSkeleton(materialLine2);
 
+	triangles1 = createTriangles(triangleMat1);
+	triangles2 = createTriangles(triangleMat2);
+
 	connectingLines = initConnectLines();
 
 	centralPos = new THREE.Vector3();
+
+	var light = new THREE.HemisphereLight( 0xffffbb, 0x080820, 1 );
+	scene.add( light );
+
 
 	// Define and create an instance of kinectron
 	//var kinectronIpAddress = ""; // FILL IN YOUR KINECTRON IP ADDRESS HERE
@@ -67,6 +95,34 @@ window.addEventListener('keydown', function(event){
 	}
 });
 
+function createTriangles(material) {
+	var triangles = [];
+
+	for (var k = 0; k < 6; k++) {
+		// Triangle
+		var triangleShape = new THREE.Shape();
+		triangleShape.moveTo( 80, 20 );
+		triangleShape.lineTo( 40, 80 );
+		triangleShape.lineTo( 120, 80 );
+		triangleShape.lineTo( 80, 20 ); // close path
+
+		//var mesh = addShape( triangleShape, 0x8080f0, 0, 0, 0, 0, 0, 0, 1 );
+		
+		var geometry = new THREE.ShapeBufferGeometry( triangleShape );
+		var mesh = new THREE.Mesh( geometry, material );
+		mesh.position.set( 0, 0, 0 - 125 );
+		mesh.rotation.set( 0, 0, 0 );
+		mesh.scale.set( 1, 1, 1 );
+		scene.add(mesh);
+		triangles.push(mesh);		
+	}
+	
+	return triangles;
+
+}
+
+
+
 
 function initConnectLines() {
 	var lines = [];
@@ -78,7 +134,7 @@ function initConnectLines() {
 		blending: THREE.AdditiveBlending
 	});
 
-	for (var i = 0; i < 26; i++) {
+	for (var i = 0; i < 18; i++) {
 		var geometryLine = new THREE.Geometry();
 		geometryLine.vertices.push(new THREE.Vector3(-1, 0, 0));
 		geometryLine.vertices.push(new THREE.Vector3(0, 1, 0));
@@ -323,7 +379,7 @@ function drawJoints1(data) {
   jointPositions1 = scaleSkeleton(data);
   
   // draw the lines of skeleton
-  drawJoints(lines1, jointPositions1);
+  drawJoints(lines1, triangles1, jointPositions1);
   //connectSkeletons();
 
 }
@@ -334,7 +390,7 @@ function drawJoints2(data) {
 	jointPositions2 = scaleSkeleton(data);
 
  	// draw the lines of skeleton
-  drawJoints(lines2, jointPositions2);
+  drawJoints(lines2, triangles2, jointPositions2);
  
 }
 
@@ -511,86 +567,108 @@ function connectSkeletons(lines, joints1, joints2) {
 	lines[17].geometry.vertices[1].z = joints1[kinectron1.FOOTRIGHT].cameraZ;
 
 
-	// second round of hand connections 
-
-	// player 1 left hand connections to hips
-
-	lines[18].geometry.vertices[0].y = joints1[kinectron1.HANDLEFT].cameraY;
-	lines[18].geometry.vertices[0].z = joints1[kinectron1.HANDLEFT].cameraZ;
-	lines[18].geometry.vertices[0].x = joints1[kinectron1.HANDLEFT].cameraX;
-
-	lines[18].geometry.vertices[1].x = joints2[kinectron1.HIPLEFT].cameraX;
-	lines[18].geometry.vertices[1].y = joints2[kinectron1.HIPLEFT].cameraY;
-	lines[18].geometry.vertices[1].z = joints2[kinectron1.HIPLEFT].cameraZ;
-
-	lines[19].geometry.vertices[0].y = joints1[kinectron1.HANDLEFT].cameraY;
-	lines[19].geometry.vertices[0].z = joints1[kinectron1.HANDLEFT].cameraZ;
-	lines[19].geometry.vertices[0].x = joints1[kinectron1.HANDLEFT].cameraX;
-
-	lines[19].geometry.vertices[1].x = joints2[kinectron1.HIPRIGHT].cameraX;
-	lines[19].geometry.vertices[1].y = joints2[kinectron1.HIPRIGHT].cameraY;
-	lines[19].geometry.vertices[1].z = joints2[kinectron1.HIPRIGHT].cameraZ;
-
-
-	// player 1 right hand connections to hips 
-
-	lines[20].geometry.vertices[0].y = joints1[kinectron1.HANDRIGHT].cameraY;
-	lines[20].geometry.vertices[0].z = joints1[kinectron1.HANDRIGHT].cameraZ;
-	lines[20].geometry.vertices[0].x = joints1[kinectron1.HANDRIGHT].cameraX;
-
-	lines[20].geometry.vertices[1].x = joints2[kinectron1.HIPLEFT].cameraX;
-	lines[20].geometry.vertices[1].y = joints2[kinectron1.HIPLEFT].cameraY;
-	lines[20].geometry.vertices[1].z = joints2[kinectron1.HIPLEFT].cameraZ;
-
-	lines[21].geometry.vertices[0].y = joints1[kinectron1.HANDRIGHT].cameraY;
-	lines[21].geometry.vertices[0].z = joints1[kinectron1.HANDRIGHT].cameraZ;
-	lines[21].geometry.vertices[0].x = joints1[kinectron1.HANDRIGHT].cameraX;
-
-	lines[21].geometry.vertices[1].x = joints2[kinectron1.HIPRIGHT].cameraX;
-	lines[21].geometry.vertices[1].y = joints2[kinectron1.HIPRIGHT].cameraY;
-	lines[21].geometry.vertices[1].z = joints2[kinectron1.HIPRIGHT].cameraZ;
-
-	// player 2 left hand connections to hips
-
-	lines[22].geometry.vertices[0].y = joints2[kinectron1.HANDLEFT].cameraY;
-	lines[22].geometry.vertices[0].z = joints2[kinectron1.HANDLEFT].cameraZ;
-	lines[22].geometry.vertices[0].x = joints2[kinectron1.HANDLEFT].cameraX;
-
-	lines[22].geometry.vertices[1].x = joints1[kinectron1.HIPLEFT].cameraX;
-	lines[22].geometry.vertices[1].y = joints1[kinectron1.HIPLEFT].cameraY;
-	lines[22].geometry.vertices[1].z = joints1[kinectron1.HIPLEFT].cameraZ;
-
-	lines[23].geometry.vertices[0].y = joints2[kinectron1.HANDLEFT].cameraY;
-	lines[23].geometry.vertices[0].z = joints2[kinectron1.HANDLEFT].cameraZ;
-	lines[23].geometry.vertices[0].x = joints2[kinectron1.HANDLEFT].cameraX;
-
-	lines[23].geometry.vertices[1].x = joints1[kinectron1.HIPRIGHT].cameraX;
-	lines[23].geometry.vertices[1].y = joints1[kinectron1.HIPRIGHT].cameraY;
-	lines[23].geometry.vertices[1].z = joints1[kinectron1.HIPRIGHT].cameraZ;
-
-
-	// player 1 right hand connections to hips
-
-	lines[24].geometry.vertices[0].y = joints2[kinectron1.HANDRIGHT].cameraY;
-	lines[24].geometry.vertices[0].z = joints2[kinectron1.HANDRIGHT].cameraZ;
-	lines[24].geometry.vertices[0].x = joints2[kinectron1.HANDRIGHT].cameraX;
-
-	lines[24].geometry.vertices[1].x = joints1[kinectron1.HIPLEFT].cameraX;
-	lines[24].geometry.vertices[1].y = joints1[kinectron1.HIPLEFT].cameraY;
-	lines[24].geometry.vertices[1].z = joints1[kinectron1.HIPLEFT].cameraZ;
-
-	lines[25].geometry.vertices[0].y = joints2[kinectron1.HANDRIGHT].cameraY;
-	lines[25].geometry.vertices[0].z = joints2[kinectron1.HANDRIGHT].cameraZ;
-	lines[25].geometry.vertices[0].x = joints2[kinectron1.HANDRIGHT].cameraX;
-
-	lines[25].geometry.vertices[1].x = joints1[kinectron1.HIPRIGHT].cameraX;
-	lines[25].geometry.vertices[1].y = joints1[kinectron1.HIPRIGHT].cameraY;
-	lines[25].geometry.vertices[1].z = joints1[kinectron1.HIPRIGHT].cameraZ;
 
 
 }
 
-function drawJoints(lines, joints) { 
+function drawJoints(lines, triangles, joints) { 
+
+	// left leg
+	triangles[0].geometry.attributes.position.array[0] = joints[kinectron1.SPINEBASE].cameraX;
+	triangles[0].geometry.attributes.position.array[1] = joints[kinectron1.SPINEBASE].cameraY;
+	triangles[0].geometry.attributes.position.array[2] = joints[kinectron1.SPINEBASE].cameraZ;
+
+	triangles[0].geometry.attributes.position.array[3] = joints[kinectron1.HIPLEFT].cameraX;
+	triangles[0].geometry.attributes.position.array[4] = joints[kinectron1.HIPLEFT].cameraY;
+	triangles[0].geometry.attributes.position.array[5] = joints[kinectron1.HIPLEFT].cameraZ;
+
+	triangles[0].geometry.attributes.position.array[6] = joints[kinectron1.FOOTLEFT].cameraX;
+	triangles[0].geometry.attributes.position.array[7] = joints[kinectron1.FOOTLEFT].cameraY;
+	triangles[0].geometry.attributes.position.array[8] = joints[kinectron1.FOOTLEFT].cameraZ;
+
+	// right leg
+	triangles[1].geometry.attributes.position.array[0] = joints[kinectron1.SPINEBASE].cameraX;
+	triangles[1].geometry.attributes.position.array[1] = joints[kinectron1.SPINEBASE].cameraY;
+	triangles[1].geometry.attributes.position.array[2] = joints[kinectron1.SPINEBASE].cameraZ;
+
+	triangles[1].geometry.attributes.position.array[3] = joints[kinectron1.HIPRIGHT].cameraX;
+	triangles[1].geometry.attributes.position.array[4] = joints[kinectron1.HIPRIGHT].cameraY;
+	triangles[1].geometry.attributes.position.array[5] = joints[kinectron1.HIPRIGHT].cameraZ;
+
+	triangles[1].geometry.attributes.position.array[6] = joints[kinectron1.FOOTRIGHT].cameraX;
+	triangles[1].geometry.attributes.position.array[7] = joints[kinectron1.FOOTRIGHT].cameraY;
+	triangles[1].geometry.attributes.position.array[8] = joints[kinectron1.FOOTRIGHT].cameraZ;
+
+	// torso
+	triangles[2].geometry.attributes.position.array[0] = joints[kinectron1.HIPLEFT].cameraX;
+	triangles[2].geometry.attributes.position.array[1] = joints[kinectron1.HIPLEFT].cameraY;
+	triangles[2].geometry.attributes.position.array[2] = joints[kinectron1.HIPLEFT].cameraZ;
+
+	triangles[2].geometry.attributes.position.array[3] = joints[kinectron1.HIPRIGHT].cameraX;
+	triangles[2].geometry.attributes.position.array[4] = joints[kinectron1.HIPRIGHT].cameraY;
+	triangles[2].geometry.attributes.position.array[5] = joints[kinectron1.HIPRIGHT].cameraZ;
+
+	triangles[2].geometry.attributes.position.array[6] = joints[kinectron1.SPINESHOULDER].cameraX;
+	triangles[2].geometry.attributes.position.array[7] = joints[kinectron1.SPINESHOULDER].cameraY;
+	triangles[2].geometry.attributes.position.array[8] = joints[kinectron1.SPINESHOULDER].cameraZ;
+
+	// left arm
+	triangles[3].geometry.attributes.position.array[0] = joints[kinectron1.SPINESHOULDER].cameraX;
+	triangles[3].geometry.attributes.position.array[1] = joints[kinectron1.SPINESHOULDER].cameraY;
+	triangles[3].geometry.attributes.position.array[2] = joints[kinectron1.SPINESHOULDER].cameraZ;
+
+	triangles[3].geometry.attributes.position.array[3] = joints[kinectron1.SHOULDERLEFT].cameraX;
+	triangles[3].geometry.attributes.position.array[4] = joints[kinectron1.SHOULDERLEFT].cameraY;
+	triangles[3].geometry.attributes.position.array[5] = joints[kinectron1.SHOULDERLEFT].cameraZ;
+
+	triangles[3].geometry.attributes.position.array[6] = joints[kinectron1.HANDLEFT].cameraX;
+	triangles[3].geometry.attributes.position.array[7] = joints[kinectron1.HANDLEFT].cameraY;
+	triangles[3].geometry.attributes.position.array[8] = joints[kinectron1.HANDLEFT].cameraZ;
+
+	// right arm
+	triangles[4].geometry.attributes.position.array[0] = joints[kinectron1.SPINESHOULDER].cameraX;
+	triangles[4].geometry.attributes.position.array[1] = joints[kinectron1.SPINESHOULDER].cameraY;
+	triangles[4].geometry.attributes.position.array[2] = joints[kinectron1.SPINESHOULDER].cameraZ;
+
+	triangles[4].geometry.attributes.position.array[3] = joints[kinectron1.SHOULDERRIGHT].cameraX;
+	triangles[4].geometry.attributes.position.array[4] = joints[kinectron1.SHOULDERRIGHT].cameraY;
+	triangles[4].geometry.attributes.position.array[5] = joints[kinectron1.SHOULDERRIGHT].cameraZ;
+
+	triangles[4].geometry.attributes.position.array[6] = joints[kinectron1.HANDRIGHT].cameraX;
+	triangles[4].geometry.attributes.position.array[7] = joints[kinectron1.HANDRIGHT].cameraY;
+	triangles[4].geometry.attributes.position.array[8] = joints[kinectron1.HANDRIGHT].cameraZ;
+
+	// head
+	triangles[5].geometry.attributes.position.array[0] = joints[kinectron1.NECK].cameraX;
+	triangles[5].geometry.attributes.position.array[1] = joints[kinectron1.NECK].cameraY;
+	triangles[5].geometry.attributes.position.array[2] = joints[kinectron1.NECK].cameraZ;
+
+	triangles[5].geometry.attributes.position.array[3] = joints[kinectron1.HEAD].cameraX + 15;
+	triangles[5].geometry.attributes.position.array[4] = joints[kinectron1.HEAD].cameraY;
+	triangles[5].geometry.attributes.position.array[5] = joints[kinectron1.HEAD].cameraZ;
+
+	triangles[5].geometry.attributes.position.array[6] = joints[kinectron1.HEAD].cameraX - 15;
+	triangles[5].geometry.attributes.position.array[7] = joints[kinectron1.HEAD].cameraY;
+	triangles[5].geometry.attributes.position.array[8] = joints[kinectron1.HEAD].cameraZ;
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+	triangles[0].geometry.attributes.position.needsUpdate = true;
+
+
+
+
 
 	// update line skeleton with incoming joint data
 	

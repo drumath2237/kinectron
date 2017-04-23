@@ -80,8 +80,8 @@ function init() {
 	container.appendChild( stats.dom );
 
 	controls = new THREE.OrbitControls(camera);
-	controls.autoRotate = true;
-	controls.autoRotateSpeed = 0.5;
+	controls.autoRotate = false;
+	controls.autoRotateSpeed = 1;
 
 	// camera.lookAt(new THREE.Vector3(0,0,0));
 
@@ -155,8 +155,8 @@ function animate() {
 
 
 	  //check hands and hips
-	  //handsTouching = checkLandR(kinectron1.HANDLEFT, kinectron1.HANDRIGHT);
-	 // hipsTouching = checkCenter();
+	  handsTouching = checkLandR(kinectron1.HANDLEFT, kinectron1.HANDRIGHT);
+	  hipsTouching = checkCenter();
 
 	 // feetTouching = checkLandR(15, 19);
 	}
@@ -175,30 +175,34 @@ function render() {
 	//console.log(camera.position.x, camera.position.y, camera.position.z);
 
 	if (jointPositions1 && jointPositions2) {
-		connectSkeletons(connectingLines, jointPositions1, jointPositions2);
+		//connectSkeletons(connectingLines, jointPositions1, jointPositions2);
 
 		centralPos = getCenter();
-		camera.lookAt( centralPos );
-
+		//camera.lookAt( centralPos );
+		camera.lookAt(0,0,0);
 
 	}
 	
-	// if (hipsTouching) {
-	// 	materialLine1.color.setHex( 0x551A8B ); //0x551A8B
-	// 	materialLine1.opacity = 0.8;
+	if (hipsTouching) {
+		triangleMat1.opacity = 0.5;
+		triangleMat2.opacity = 0.5;
+		triangleMat1.color.setHex( 0x80f0a6 );
+		triangleMat2.color.setHex( 0xf080e9 );
+		triangleMat1.blending = THREE.AdditiveBlending;
+		triangleMat2.blending = THREE.AdditiveBlending;
+		
+		handsTouching = false;
 
-	// 	materialLine2.color.setHex( 0x551A8B );
-	// 	materialLine2.opacity = 0.8;
+	} else {
+		triangleMat1.opacity = 1.0;
+		triangleMat2.opacity = 1.0;
+		triangleMat1.color.setHex( 0x8080f0 );
+		triangleMat2.color.setHex( 0x8080f0 );
 
-	// 	handsTouching = false;
-
-	// } else {
-	// 	materialLine1.color.setHex( 0xffffff );
-	// 	materialLine1.opacity = 0.5;
-
-	// 	materialLine2.color.setHex( 0xffffff );
-	// 	materialLine2.opacity = 0.5;
-	// }
+		triangleMat1.blending = THREE.NormalBlending;
+		triangleMat2.blending = THREE.NormalBlending;
+		
+	}
 
 
 	var i = 0;
