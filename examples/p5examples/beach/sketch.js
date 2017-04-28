@@ -11,16 +11,16 @@ var processing = false;
 var kinectron = null;
 
 function preload() {
-  beach = loadImage("images/beach.png");
+  beach = loadImage("images/Beach1.jpg");
 }
 
 function setup() {
-  myCanvas = createCanvas(640, 426);
+  myCanvas = createCanvas(1920, 1080);
   background(255);
 
   // Define and create an instance of kinectron
   var kinectronIpAddress = ""; // FILL IN YOUR KINECTRON IP ADDRESS HERE
-  kinectron = new Kinectron(kinectronIpAddress);
+  kinectron = new Kinectron();
 
   // Connect to the microstudio
   //kinectron = new Kinectron("kinectron.itp.tsoa.nyu.edu");

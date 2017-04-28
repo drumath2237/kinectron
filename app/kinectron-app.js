@@ -889,7 +889,7 @@ function displayCurrentFrames() {
 function startMulti(multiFrames) {
   console.log('starting multi');
 
-  var options = {frameTypes: multiFrames};
+  var options = {frameTypes: Kinect2.FrameType.bodyIndexColor | Kinect2.FrameType.body | Kinect2.FrameType.color };
   var multiToSend = {};
 
   displayCurrentFrames();
@@ -934,7 +934,8 @@ function startMulti(multiFrames) {
         var index = 0;
 
         // draw tracked bodies
-        skeletonContext.clearRect(0, 0, skeletonCanvas.width, skeletonCanvas.height);
+        skeletonContext.fillStyle = '#ffffff';
+        skeletonContext.fillRect(0, 0, skeletonCanvas.width, skeletonCanvas.height);
         frame.body.bodies.forEach(function(body){
           if(body.tracked) {
             drawSkeleton(skeletonCanvas, skeletonContext, body, index);
@@ -943,6 +944,45 @@ function startMulti(multiFrames) {
         });
 
         multiToSend.body = frame.body.bodies;
+      }
+
+
+      if (frame.bodyIndexColor) {
+
+        var keyCanvas = document.getElementById('key-canvas');
+        var keyContext = keyCanvas.getContext('2d');
+
+
+        resetCanvas('color');
+        canvasState = 'color';
+        setImageData();
+
+        
+        var closestBodyIndex = getClosestBodyIndex(frame.body.bodies);
+        if(closestBodyIndex !== trackedBodyIndex) {
+          if(closestBodyIndex > -1) {
+            kinect.trackPixelsForBodyIndices([closestBodyIndex]);
+          } else {
+            kinect.trackPixelsForBodyIndices(false);
+          }
+        }
+        else {
+          if (closestBodyIndex > -1) {
+            if (frame.bodyIndexColor.bodies[closestBodyIndex].buffer) {
+
+              newPixelData = frame.bodyIndexColor.bodies[closestBodyIndex].buffer;
+
+              for (var i = 0; i < imageDataSize; i++) {
+                imageDataArray[i] = newPixelData[i];
+              }
+
+              drawImageToCanvas(keyCanvas, keyContext, 'key', 'png');
+            }
+          }
+        }
+        trackedBodyIndex = closestBodyIndex;
+        
+
       }
 
       if (frame.rawDepth) {
@@ -1453,13 +1493,22 @@ function drawSkeleton(inCanvas, inContext, body, index) {
   //draw joints
   for(var jointType in body.joints) {
     var joint = body.joints[jointType];
-    inContext.fillStyle = colors[index];
-    inContext.fillRect(joint.depthX * inCanvas.width, joint.depthY * inCanvas.height, 10, 10);
+    // inContext.fillStyle = colors[index];
+    // inContext.fillRect(joint.depthX * inCanvas.width, joint.depthY * inCanvas.height, 10, 10);
+
+  inContext.beginPath();
+  inContext.fillStyle = '#000000';
+
+  inContext.arc(joint.depthX * 512, joint.depthY * 424, 5, 0, Math.PI * 2, true);
+  inContext.fill();
+  inContext.closePath();
+  inContext.globalAlpha = 1;
+  
   }
   
   //draw hand states
-  updateHandState(inContext, body.leftHandState, body.joints[Kinect2.JointType.handLeft]);
-  updateHandState(inContext, body.rightHandState, body.joints[Kinect2.JointType.handRight]);
+  //updateHandState(inContext, body.leftHandState, body.joints[Kinect2.JointType.handLeft]);
+ // updateHandState(inContext, body.rightHandState, body.joints[Kinect2.JointType.handRight]);
 }
 
 function updateHandState(context, handState, jointPoint) {
