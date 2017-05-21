@@ -37,8 +37,7 @@
 		</style>
 	</head>
 	<body>
-<!-- 	<script src="https://cdnjs.cloudflare.com/ajax/libs/lodash.js/4.17.4/lodash.js"></script>
- -->		<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/84/three.min.js"></script>
+		<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/84/three.min.js"></script>
 		<script type="text/javascript" src="../../../client/bin/kinectron.bundle.js"></script>
 		<script src="../shared/TrackballControls.js"></script>
 
@@ -55,6 +54,7 @@
 			uniform float width;
 			uniform float height;
 			uniform float nearClipping, farClipping, dClipping1, dClipping2;
+			uniform float flrClipping1, flrClipping2;
 
 			uniform float pointSize;
 			uniform float zOffset;
@@ -64,7 +64,6 @@
 			varying vec2 vUv;
 			varying float depth;
 			varying vec4 color1, color2;
-			//varying float visibility;
 
 			const float XtoZ = 1.11146; // tan( 1.0144686 / 2.0 ) * 2.0;
 			const float YtoZ = 0.83359; // tan( 0.7898090 / 2.0 ) * 2.0;
@@ -83,36 +82,55 @@
 					color1.r = 0.0;
 					color1.g = 0.0;
 					color1.b = 0.0;
+					color1.w = 0.0;
 				} 
 
 				if ( vUv.x > xRightClip1 ) {
 					color1.r = 0.0;
 					color1.g = 0.0;
 					color1.b = 0.0;
+					color1.w = 0.0;
 				} 
+
+				if ( vUv.y < flrClipping1 ) {
+					color1.r = 0.0;
+					color1.g = 0.0;
+					color1.b = 0.0;
+					color1.w = 0.0;
+				}
 
 				if ( vUv.x < xLeftClip2 ) {
 					color2.r = 0.0;
 					color2.g = 0.0;
 					color2.b = 0.0;
+					color2.w = 0.0;
 				} 
 
 				if ( vUv.x > xRightClip2 ) {
 					color2.r = 0.0;
 					color2.g = 0.0;
 					color2.b = 0.0;
+					color2.w = 0.0;
 				} 
 
+				if ( vUv.y < flrClipping2 ) {
+					color2.r = 0.0;
+					color2.g = 0.0;
+					color2.b = 0.0;
+					color2.w = 0.0;
+				} 
+
+				float div = 2.0;
 				// // use this to just turn it white, no distortion
-				// if (color1.w > 0.0 && color2.w > 0.0) div = 2.0;
+				//if (color1.w > 0.0 && color2.w > 0.0) div = 2.0;
 
 				// depth = (color1.w + color2.w) / div;
 
-				float div = 1.0;
+
 
 				//if (color1.w > 0.0 && color2.w > 0.0) div = 1.0;
 
-				depth = color1.w + color2.w;
+				depth = (color1.w + color2.w)/div;
 
 				if ( color1.r > 0.0 && color2.r > 0.0 ) {
 					color1.r = 1.0;
@@ -124,16 +142,7 @@
 					color2.b = 1.0;
 				}
 
-				// if ( depth < dClipping ) {
-				// 	visibility = 0.0; 
-				// } else {
-				// 	visibility = 1.0;
-				// }
-
-				//float depth = ( color.r + color.g + color.b ) / 3.0;
-
 				// Projection code by @kcmic
-
 				float z = ( 1.0 - depth ) * (farClipping - nearClipping) + nearClipping;
 
 				vec4 pos = vec4(
@@ -157,7 +166,6 @@
 
 			varying vec2 vUv;
 			varying vec4 color1, color2;
-			//varying float visibility;
 
 			void main() {
 

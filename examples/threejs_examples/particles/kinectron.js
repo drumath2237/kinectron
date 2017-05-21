@@ -52,7 +52,7 @@ function initKinectron() {
 	kinectron1.makeConnection();
 	kinectron1.startTrackedBodies(drawJoints1);
 
-	kinectron2 = new Kinectron("10.0.1.4");
+	kinectron2 = new Kinectron("10.0.1.3");
 
 	// Connect remote to application
 	kinectron2.makeConnection();

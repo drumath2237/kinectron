@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<meta charset="utf-8">
+		<meta name="viewport" content="width=device-width, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0">
+		<style>
+			body {
+				font-family: Monospace;
+				background-color: #000000;
+				margin: 0px;
+				overflow: hidden;
+				cursor: none;
+			}
+
+			#info {
+				color: #ffffff;
+
+				font-family: Monospace;
+				font-size: 13px;
+				text-align: center;
+				font-weight: bold;
+
+				position: absolute;
+				top: 5px; width: 100%;
+			}
+
+			a {
+
+				color: #0040ff;
+
+			}
+
+			#canvas1, #canvas2, #img1, #img2 {
+				visibility: hidden;
+				position: fixed;
+				bottom: 0;
+			}
+		</style>
+	</head>
+	<body>
+		<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/84/three.min.js"></script>
+		<script type="text/javascript" src="../../../client/bin/kinectron.bundle.js"></script>
+		<script src="../shared/TrackballControls.js"></script>
+		<script type="text/javascript" src="../shared/OrbitControls.js"></script>
+		<script src='../shared/dat.gui.min.js'></script>
+		<script src="../shared/Detector.js"></script>
+		<script src="../shared/stats.min.js"></script>
+		<script id="vs" type="x-shader/x-vertex">
+
+			uniform sampler2D map;
+
+			uniform float width;
+			uniform float height;
+			uniform float nearClipping, farClipping, dClipping, dClippingFar;
+
+			uniform float pointSize;
+			uniform float zOffset;
+			uniform float xOffset;
+			uniform float xLeftClip;
+			uniform float xRightClip;
+			uniform float yBottomClip, yTopClip;
+
+			varying vec2 vUv;
+			varying float depth;
+			varying float visibility;
+
+			const float XtoZ = 1.11146; // tan( 1.0144686 / 2.0 ) * 2.0;
+			const float YtoZ = 0.83359; // tan( 0.7898090 / 2.0 ) * 2.0;
+
+			void main() {
+
+				vUv = vec2( position.x / width, position.y / height );
+
+				vec4 color = texture2D( map, vUv );
+				depth = color.w / 1.0;
+
+				if ( depth < dClipping || depth > dClippingFar ) {
+					visibility = 0.0; 
+				} else {
+					visibility = 1.0;
+				}
+
+
+				//float depth = ( color.r + color.g + color.b ) / 3.0;
+
+				// Projection code by @kcmic
+
+				float z = ( 1.0 - depth ) * (farClipping - nearClipping) + nearClipping;
+
+				vec4 pos = vec4(
+					( position.x / width - 0.5 ) * z * XtoZ - xOffset,
+					( position.y / height - 0.5 ) * z * YtoZ,
+					- z + zOffset,
+					1.0);
+
+				gl_PointSize = pointSize;
+				gl_Position = projectionMatrix * modelViewMatrix * pos;
+
+			}
+
+		</script>
+
+		<script id="fs" type="x-shader/x-fragment">
+
+			uniform sampler2D map;
+			uniform float xLeftClip;
+			uniform float xRightClip;
+			uniform float yBottomClip, yTopClip;
+
+			varying vec2 vUv;
+			varying float visibility;
+
+			void main() {
+
+				if ( vUv.x < xLeftClip ) discard;
+
+				if (vUv.x > xRightClip ) discard;
+
+				if (visibility == 0.0) discard;
+
+
+				//if (depth > 10.0 ) discard;
+
+				vec4 color = texture2D( map, vUv );
+
+				if (vUv.y > yTopClip) {
+					color.r = 0.0;
+					color.g = 0.0;
+					color.b = 0.0;
+				}
+
+
+				if (vUv.y < yBottomClip) {
+					color.r = 0.0;
+					color.g = 0.0;
+					color.b = 0.0;
+				}
+
+				float opacity = 1.0;
+
+				// if ( (color.r + color.g + color.b) / 3.0 > 0.8) {
+				// 	opacity = 0.0;
+				// }
+
+
+				// if (color.r > 0.5 && color.g > 0.5 && color.b > 0.5 ) {
+				// 	color.r = 1.0;
+				// 	color.g = 0.0;
+				// 	color.b = 0.0;	
+				// }
+
+				gl_FragColor = vec4( color.r, color.g, color.b, opacity );
+
+			}
+		</script>
+		<script src="sketch.js" ></script>
+		<canvas id="canvas1"></canvas>
+		<canvas id="canvas2"></canvas>	
+<!-- 		<img id="img1"/>
+		<img id="img2"/> -->
+	</body>
+</html>

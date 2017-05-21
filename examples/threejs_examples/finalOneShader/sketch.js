@@ -11,6 +11,8 @@ var stats;
 
 var video, video2, texture, texture2;
 
+var dClipping1, dClipping2, flrClipping1, flrClipping2, xLeftClip1, xRightClip1, xLeftClip2, xRightClip2;
+
 // Use two canvases to draw incoming feeds
 var canvas; 
 var ctx; 
@@ -21,7 +23,22 @@ var ctx2;
 var CANVW = 768;
 var KIMGW = 512;
 var CANVH = 424;
+var canv1XStart = 30;
+var canv2XStart = 256 - 30;
 var busy = false;
+
+var params = {
+	canv1Start: 30,
+	canv2Start: 226,
+	dClipping1: 0.45,
+	dClipping2: 0.6,
+	flrClipping1: 0.33,
+	flrClipping2: 0.33,
+	xLeftClip1: 0.2,
+	xRightClip1: 0.55,
+	xLeftClip2: 0.45,
+	xRightClip2: 0.75
+};
 
 var controls;
 
@@ -29,8 +46,6 @@ window.addEventListener('load', init);
 
 var busy1 = false;
 var busy2 = false;
-// var img1;
-// var img2;
 
 function changeCanvas1(data) {
 	if (busy) {
@@ -50,7 +65,7 @@ function changeCanvas1(data) {
 
   img1.onload = function() {
     ctx.clearRect(0, 0, CANVW, CANVH);
-    ctx.drawImage(img1,256,0, KIMGW, CANVH);  
+    ctx.drawImage(img1,canv1XStart,0, KIMGW, CANVH);  
   };
   
  	setTimeout(function() {
@@ -75,7 +90,7 @@ function changeCanvas2(data) {
 
   img2.onload = function() {
     ctx2.clearRect(0, 0, CANVW, CANVH);
-    ctx2.drawImage(img2, 128, 0, KIMGW, CANVH); 
+    ctx2.drawImage(img2, canv2XStart, 0, KIMGW, CANVH); 
   };
 
   setTimeout(function() {
@@ -124,8 +139,48 @@ function init() {
 
 	initKinectron();
 
+	// dat.GUI
+
+	var gui = new dat.GUI( { width: 300 } );
+
+	var folderCanv1 = gui.addFolder( 'Canvas1' );
+	folderCanv1.add( params, 'canv1Start', 0, 256 ).step( 1 ).onChange( function( value ) { setCanvasPosition(); } );
+	folderCanv1.add( params, 'dClipping1', 0.0, 1.0 ).step( 0.01 ).onChange( function( value ) { updateMaterial(); } );
+	folderCanv1.add( params, 'flrClipping1', 0.0, 1.0 ).step( 0.01 ).onChange( function( value ) { updateMaterial(); } );
+	folderCanv1.add( params, 'xLeftClip1', 0.0, 1.0 ).step( 0.01 ).onChange( function( value ) { updateMaterial(); } );
+	folderCanv1.add( params, 'xRightClip1', 0.0, 1.0 ).step( 0.01 ).onChange( function( value ) { updateMaterial(); } );
+	folderCanv1.open();
+
+
+	var folderCanv2 = gui.addFolder( 'Canvas2' );
+	folderCanv2.add( params, 'canv2Start', 0, 256 ).step( 1 ).onChange( function( value ) { setCanvasPosition(); } );
+	folderCanv2.add( params, 'dClipping2', 0.0, 1.0 ).step( 0.01 ).onChange( function( value ) { updateMaterial(); } );
+	folderCanv2.add( params, 'flrClipping2', 0.0, 1.0 ).step( 0.01 ).onChange( function( value ) { updateMaterial(); } );
+	folderCanv2.add( params, 'xLeftClip2', 0.0, 1.0 ).step( 0.01 ).onChange( function( value ) { updateMaterial(); } );
+	folderCanv2.add( params, 'xRightClip2', 0.0, 1.0 ).step( 0.01 ).onChange( function( value ) { updateMaterial(); } );
+	folderCanv2.open();
+
 	controls = new THREE.TrackballControls( camera, renderer.domElement );
 	document.addEventListener( 'mousemove', onDocumentMouseMove, false );
+
+
+	// canv1Start: 30,
+	// canv2Start: 226,
+	// dClipping1: 0.45,
+	// dClipping2: 0.6,
+	// flrClipping1: 0.33,
+	// flrClipping2: 0.33,
+	// xLeftClip1: 0.2,
+	// xRightClip1: 0.55,
+	// xLeftClip2: 0.45,
+	// xRightClip2: 0.75
+
+
+//setCanvasPosition() {}
+//updateMaterial
+
+
+
 
 	//
 
@@ -138,11 +193,11 @@ function init() {
 function initKinectron() {
 					  // Define and create an instance of kinectron
 	  //var kinectronIpAddress = ""; // FILL IN YOUR KINECTRON IP ADDRESS HERE
-	  kinectron1 = new Kinectron("10.0.1.14");
+	  kinectron1 = new Kinectron("10.0.1.3");
 	  kinectron1.makeConnection();
 	  kinectron1.startMultiFrame(["depth", "depth-color"], changeCanvas1);
 
-    kinectron2 = new Kinectron("10.0.1.4");
+    kinectron2 = new Kinectron("10.0.1.14");
     kinectron2.makeConnection();
     kinectron2.startMultiFrame(["depth", "depth-color"], changeCanvas2);
 }
@@ -198,25 +253,28 @@ function createKinectImg1() {
 
 		// create shader material
 
+		updateMaterial();
+		
 		material = new THREE.ShaderMaterial( {
 
 			uniforms: {
 
-				"map1":         { value: texture2 },
-				"map2": 				{ value: texture }, 
+				"map1":         { value: texture },
+				"map2": 				{ value: texture2 }, 
 				"width":        { value: width },
 				"height":       { value: height },
 				"nearClipping": { value: nearClipping },
 				"farClipping":  { value: farClipping },
-				"dClipping1": 	{ value: 0.45 },
-				"dClipping2":   { value : 0.6 },  
-
+				"dClipping1": 	{ value: dClipping1 },
+				"dClipping2":   { value : dClipping2 },  
+				"flrClipping1": { value : flrClipping1 },
+				"flrClipping2": { value : flrClipping2 },
 				"pointSize":    { value: 2 },
 				"zOffset":      { value: 1000 },
-        "xLeftClip1":    { value: 0.4 }, //0.2
-        "xRightClip1":   { value: 0.65 },  //0.4
-        "xLeftClip2":    { value: 0.5 }, //0.5
-        "xRightClip2":   { value: 0.7 }  //0.7
+        "xLeftClip1":   { value: xLeftClip1 }, //0.0 is natural beginning
+        "xRightClip1":  { value: xRightClip1 },  //0.66 is natural end
+        "xLeftClip2":   { value: xLeftClip2 }, //0.33 is natural beginning
+        "xRightClip2":  { value: xRightClip2 }  //1.0 is natural end 
 
 			},
 			vertexShader: document.getElementById( 'vs' ).textContent,
@@ -229,6 +287,35 @@ function createKinectImg1() {
 
 		mesh = new THREE.Points( geometry, material );
 		scene.add( mesh );
+
+}
+
+function setCanvasPosition() {
+	canv1XStart = params.canv1Start;
+	canv2XStart = params.canv2Start;
+} 
+
+function updateMaterial() {
+	if (typeof material !== 'undefined') {
+		material.uniforms.dClipping1.value = params.dClipping1;
+		material.uniforms.dClipping2.value = params.dClipping2;
+		material.uniforms.flrClipping1.value = params.flrClipping1;
+		material.uniforms.flrClipping2.value = params.flrClipping2;
+		material.uniforms.xLeftClip1.value = params.xLeftClip1;
+		material.uniforms.xRightClip1.value = params.xRightClip1;
+		material.uniforms.xLeftClip2.value = params.xLeftClip2;
+		material.uniforms.xRightClip2.value = params.xRightClip2;
+	} else {
+		dClipping1 = params.dClipping1;
+		dClipping2 = params.dClipping2;
+		flrClipping1 = params.flrClipping1;
+		flrClipping2 = params.flrClipping2;
+		xLeftClip1 = params.xLeftClip1;
+		xRightClip1 = params.xRightClip1;
+		xLeftClip2 = params.xLeftClip2;
+		xRightClip2 = params.xRightClip2;
+	}
+
 
 }
 
@@ -251,6 +338,7 @@ function onDocumentMouseMove( event ) {
 }
 
 function animate() {
+	material.needsUpdate = true;
  
   texture.needsUpdate = true;
   texture2.needsUpdate = true;

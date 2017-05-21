@@ -25,9 +25,9 @@ var down = true;
 init();
 animate();
 
-window.addEventListener('mousedown', function() {
-	handsTouching = !handsTouching;
-});
+// window.addEventListener('mousedown', function() {
+// 	handsTouching = !handsTouching;
+// });
 
 function init() {
 
@@ -80,7 +80,7 @@ function init() {
 	container.appendChild( stats.dom );
 
 	controls = new THREE.OrbitControls(camera);
-	controls.autoRotate = true;
+	controls.autoRotate = false;
 	controls.autoRotateSpeed = 0.5;
 
 	// camera.lookAt(new THREE.Vector3(0,0,0));
@@ -170,9 +170,6 @@ function animate() {
 
 function render() {
 
-	//camera.position.x += ( mouseX - camera.position.x ) * .05;
-	//camera.position.y += ( - mouseY - camera.position.y ) * .05;
-	//console.log(camera.position.x, camera.position.y, camera.position.z);
 
 	if (jointPositions1 && jointPositions2) {
 		connectSkeletons(connectingLines, jointPositions1, jointPositions2);
@@ -183,23 +180,6 @@ function render() {
 
 	}
 	
-	// if (hipsTouching) {
-	// 	materialLine1.color.setHex( 0x551A8B ); //0x551A8B
-	// 	materialLine1.opacity = 0.8;
-
-	// 	materialLine2.color.setHex( 0x551A8B );
-	// 	materialLine2.opacity = 0.8;
-
-	// 	handsTouching = false;
-
-	// } else {
-	// 	materialLine1.color.setHex( 0xffffff );
-	// 	materialLine1.opacity = 0.5;
-
-	// 	materialLine2.color.setHex( 0xffffff );
-	// 	materialLine2.opacity = 0.5;
-	// }
-
 
 	var i = 0;
 
