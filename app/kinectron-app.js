@@ -681,9 +681,15 @@ function chooseMulti(evt, incomingFrames) {
         multiFrames.push(Kinect2.FrameType.rawDepth);
       break;
 
-      // case 'bodyIndexColor':
-      //   multiFrames.push(Kinect2.FrameType.bodyIndexColor);
-      // break;
+      case 'key':
+        multiFrames.push(Kinect2.FrameType.bodyIndexColor);
+        console.log('adding index');
+        if (multiFrames.indexOf(Kinect2.FrameType.body) <= -1) {
+          multiFrames.push(Kinect2.FrameType.body);
+          console.log('adding body');
+        }
+        
+      break;
 
       // case 'depthColor':
       //   multiFrames.push(Kinect2.FrameType.depthColor);
@@ -1039,6 +1045,40 @@ function startMulti(multiFrames) {
         processRawDepthBuffer(newPixelData);
         temp = drawImageToCanvas(rawDepthCanvas, rawDepthContext, null, 'webp', 1);
         multiToSend.rawDepth = temp;
+      }
+
+      if (frame.bodyIndexColor) {
+        var keyCanvas = document.getElementById('key-canvas');
+        var keyContext = keyCanvas.getContext('2d');
+
+        resetCanvas('color');
+        canvasState = 'color';
+        setImageData();
+
+        var closestBodyIndex = getClosestBodyIndex(frame.body.bodies);
+        if(closestBodyIndex !== trackedBodyIndex) {
+          if(closestBodyIndex > -1) {
+            kinect.trackPixelsForBodyIndices([closestBodyIndex]);
+          } else {
+            kinect.trackPixelsForBodyIndices(false);
+          }
+        }
+        else {
+          if (closestBodyIndex > -1) {
+            if (frame.bodyIndexColor.bodies[closestBodyIndex].buffer) {
+              newPixelData = frame.bodyIndexColor.bodies[closestBodyIndex].buffer;
+
+              for (var i = 0; i < imageDataSize; i++) {
+                imageDataArray[i] = newPixelData[i];
+              }
+
+              temp = drawImageToCanvas(keyCanvas, keyContext, null, 'webp');
+              multiToSend.keyBody = frame.body.bodies[closestBodyIndex];
+              multiToSend.key = temp;
+            }
+          }
+        }
+        trackedBodyIndex = closestBodyIndex;
       }
 
       // TO DO Integrate into interface  
