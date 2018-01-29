@@ -33,6 +33,7 @@
               <input type="button" class="frame-option" id="color" value="Color">
               <input type="button" class="frame-option" id="depth" value="Depth">
               <input type="button" class="frame-option" id="raw-depth" value="Raw Depth">
+              <input type="button" class="frame-option" id="depth-color" value="Depth Color">
               <input type="button" class="frame-option" id="skeleton" value="Skeleton (Tracked Bodies)">
               <input type="button" class="frame-option" id="body" value="All Bodies">
               <input type="button" class="frame-option" id="infrared" value="Infrared">
@@ -52,6 +53,9 @@
               </div>
               <div class="styleCheckBox">
               <input class="cb-multi" type="checkbox" id="cbox-depth" value="depth"> <label for="cbox-depth">Depth</label>
+              </div>
+              <div class="styleCheckBox">
+              <input class="cb-multi" type="checkbox" id="cbox-depth-color" value="depth-color"> <label for ="cbox-depth-color"><span class="label-text">Depth Color</label>
               </div>
               <div class="styleCheckBox">
               <input class="cb-multi" type="checkbox" id="cbox-skeleton" value="body"> <label for="cbox-skeleton">Skeleton</label>
@@ -122,8 +126,12 @@
           <canvas id="depth-canvas" width="512" height="424"></canvas>
         </div>
         <div id="raw-depth-div" >
-          <h5 id="raw-depth-canvas-label">Raw Deth Feed</h5>
+          <h5 id="raw-depth-canvas-label">Raw Depth Feed</h5>
           <canvas id="raw-depth-canvas" width="512" height="424"></canvas>
+        </div>
+        <div id="depth-color-div" >
+          <h5 id="depth-color-canvas-label">Depth Color Feed</h5>
+          <canvas id="depth-color-canvas" width="512" height="424"></canvas>
         </div>
         <!-- skeleton used for all bodies and tracked bodies -->
         <div id="skeleton-div" >

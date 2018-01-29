@@ -88,6 +88,7 @@ function init() {
   document.getElementById('color').addEventListener('click', chooseCamera);
   document.getElementById('depth').addEventListener('click', chooseCamera);
   document.getElementById('raw-depth').addEventListener('click', chooseCamera);
+  document.getElementById('depth-color').addEventListener('click', chooseCamera);
   document.getElementById('infrared').addEventListener('click', chooseCamera);
   document.getElementById('le-infrared').addEventListener('click', chooseCamera);
   document.getElementById('key').addEventListener('click', chooseCamera);
@@ -583,6 +584,10 @@ function changeCameraState(camera, state) {
       cameraCode = 'RawDepth';
     break;
 
+    case 'depth-color':
+      cameraCode = 'DepthColor';
+    break;
+
     case 'key':
       cameraCode = 'Key';
     break;
@@ -690,9 +695,9 @@ function chooseMulti(evt, incomingFrames) {
       //   multiFrames.push(Kinect2.FrameType.bodyIndexColor);
       // break;
 
-      // case 'depthColor':
-      //   multiFrames.push(Kinect2.FrameType.depthColor);
-      // break;
+      case 'depth-color':
+        multiFrames.push(Kinect2.FrameType.depthColor);
+      break;
 
       //infrared is not implemented for multiframe yet
       // case 'infrared': 
@@ -823,6 +828,52 @@ function stopRawDepth() {
   kinect.removeAllListeners();
   canvasState = null;
   rawDepth = false;
+  busy = false;
+}
+
+function startDepthColor() {
+  console.log("starting depth color");
+
+  var depthColorCanvas = document.getElementById('depth-color-canvas');
+  var depthColorContext = depthColorCanvas.getContext('2d');
+
+  resetCanvas('depth');
+  canvasState = 'depth';
+  setImageData();
+
+  if(kinect.open()) {
+      kinect.on('multiSourceFrame', function(frame) {
+        
+        if(busy) {
+          return;
+        }
+
+        busy = true;
+
+        processColorBuffer(frame.depthColor.buffer);
+        drawImageToCanvas(depthColorCanvas, depthColorContext, 'depth-color', 'jpeg');
+          
+        busy = false;
+
+        
+        // setTimeout(function() {
+        //   busy = false;
+        // });
+
+      }); // kinect.on
+    } // open
+      kinect.openMultiSourceReader({
+        frameTypes: Kinect2.FrameType.depthColor
+      });
+
+
+}
+
+function stopDepthColor() {
+  console.log("stopping depth color");
+  kinect.closeMultiSourceReader();
+  kinect.removeAllListeners();
+  canvasState = null;
   busy = false;
 }
 
@@ -1105,17 +1156,22 @@ function startMulti(multiFrames) {
       }
 
       // TO DO Integrate into interface  
-      // if (frame.depthColor) {
-      //   resetCanvas('depth');
-      //   canvasState = 'depth';
-      //   setImageData();
+      if (frame.depthColor) {
 
-      //   newPixelData = frame.depthColor.buffer;
-      //   processColorBuffer(newPixelData);
-      //   temp = drawImageToCanvas(null, 'jpeg');
-      //   multiToSend.depthColor = temp;
+        var depthColorCanvas = document.getElementById('depth-color-canvas');
+        var depthColorContext = depthColorCanvas.getContext('2d');
 
-      // }
+        resetCanvas('depth');
+        canvasState = 'depth';
+        setImageData();
+
+        newPixelData = frame.depthColor.buffer;
+        processColorBuffer(newPixelData);
+        temp = drawImageToCanvas(depthColorCanvas, depthColorContext, null, 'jpeg');
+        //temp = drawImageToCanvas(depth null, 'jpeg');
+        multiToSend.depthColor = temp;
+
+      }
 
       // function drawColorBuffer(imageBuffer) {
       //   if(busy) {
