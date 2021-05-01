@@ -22,7 +22,6 @@ var peer_connections = [];
 var peer = null;
 var peerIdDisplay = null;
 var newPeerEntry = false;
-var newPeerInfo;
 
 var canvas = null;
 var context = null;
@@ -1051,7 +1050,6 @@ function chooseMulti(evt, incomingFrames) {
     chooseCamera(null, 'stop-all');
   }
 
-  var temp;
   var frames = [];
   var multiFrames = [];
   var result;
@@ -1078,11 +1076,8 @@ function chooseMulti(evt, incomingFrames) {
   currentFrames = frames;
 
   // TODO Simplify the case and result per Shawn
-  for (var j = 0; j < frames.length; j++) {
-    var frameName;
-    var tempName;
-
-    frameName = frames[j];
+  for (let j = 0; j < frames.length; j++) {
+    const frameName = frames[j];
 
     switch (frameName) {
       case 'color':
@@ -1099,6 +1094,10 @@ function chooseMulti(evt, incomingFrames) {
 
       case 'raw-depth':
         multiFrames.push(Kinect2.FrameType.rawDepth);
+        break;
+
+      case 'infrared':
+        multiFrames.push(Kinect2.FrameType.infrared);
         break;
 
       // case 'bodyIndexColor':
@@ -1123,6 +1122,7 @@ function chooseMulti(evt, incomingFrames) {
   result = multiFrames.reduce(function (a, b) {
     return a | b;
   });
+
   toggleFeedDiv('multi', 'block');
   startMulti(result);
 }
@@ -1719,7 +1719,7 @@ function displayCurrentFrames() {
 function startMulti(multiFrames) {
   console.log('starting multi');
 
-  let options = { frameTypes: multiFrames };
+  const options = { frameTypes: multiFrames };
   let multiToSend = {};
 
   displayCurrentFrames();
@@ -1727,11 +1727,6 @@ function startMulti(multiFrames) {
   multiFrame = true;
   if (kinect.open()) {
     kinect.on('multiSourceFrame', function (frame) {
-      if (busy) {
-        return;
-      }
-      busy = true;
-
       let newPixelData;
       let temp;
 
@@ -1811,6 +1806,42 @@ function startMulti(multiFrames) {
         multiToSend.depth = dataUrl;
       }
 
+      if (frame.infrared) {
+        const infraredCanvas = document.getElementById(
+          'infrared-canvas',
+        );
+        infraredCanvas.width = depthwidth;
+        infraredCanvas.height = depthheight;
+        const infraredContext = infraredCanvas.getContext('2d');
+
+        resetCanvas('depth');
+        canvasState = 'depth';
+        setImageData();
+
+        newPixelData = frame.infrared.buffer;
+        processDepthBuffer(newPixelData);
+
+        // temp = prepareDataToSend(
+        //   infraredCanvas,
+        //   infraredContext,
+        //   'webp',
+        //   imgQuality,
+        //   'infrared',
+        // );
+
+        // sendToPeer('frame', packagedData);
+
+        // kinect.openInfraredReader();
+
+        const tempCanvas = drawImageToCanvas(
+          infraredCanvas,
+          infraredContext,
+        );
+        const dataUrl = createDataUrl(tempCanvas, 'webp', imgQuality);
+
+        multiToSend.infrared = dataUrl;
+      }
+
       if (frame.rawDepth) {
         let rawDepthCanvas = document.getElementById(
           'raw-depth-canvas',
@@ -1843,8 +1874,6 @@ function startMulti(multiFrames) {
 
       // No Framerate limiting
       sendToPeer('multiFrame', multiToSend, true);
-
-      busy = false;
     }); // kinect.on
   } // open
 
