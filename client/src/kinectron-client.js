@@ -117,6 +117,8 @@ const Kinectron = function (arg1, arg2) {
   let timeCounter = 0;
   let sendCounter = 0;
 
+  let frameImageURL;
+
   // Check for ip address in "quickstart" method
   // If user has provided only first argument
   if (typeof arg1 !== 'undefined' && typeof arg2 === 'undefined') {
@@ -279,7 +281,38 @@ const Kinectron = function (arg1, arg2) {
 
           // If image data draw image
           case 'frame':
-            this.img.src = data.imagedata;
+            // https://stackoverflow.com/questions/12168909/blob-from-dataurl
+            const dataURI = data.imagedata;
+            // convert base64 to raw binary data held in a string
+            // doesn't handle URLEncoded DataURIs - see SO answer #6850276 for code that does this
+            const byteString = atob(dataURI.split(',')[1]);
+
+            // separate out the mime component
+            const mimeString = dataURI
+              .split(',')[0]
+              .split(':')[1]
+              .split(';')[0];
+
+            // write the bytes of the string to an ArrayBuffer
+            const ab = new ArrayBuffer(byteString.length);
+
+            // create a view into the buffer
+            const ia = new Uint8Array(ab);
+
+            // set the bytes of the buffer to the correct values
+            for (let i = 0; i < byteString.length; i++) {
+              ia[i] = byteString.charCodeAt(i);
+            }
+
+            // write the ArrayBuffer to a blob, and you're done
+            const imageBlob = new Blob([ab], { type: mimeString });
+
+            if (frameImageURL) {
+              URL.revokeObjectURL(frameImageURL);
+            }
+
+            frameImageURL = URL.createObjectURL(imageBlob);
+            this.img.src = frameImageURL;
 
             this.img.onload = function () {
               this._chooseCallback(data.name);
@@ -601,19 +634,6 @@ const Kinectron = function (arg1, arg2) {
 
     this._setFeed('rgbd');
   };
-
-  // this.startScale = function(callback) {
-  //   this.callback = callback;
-  //   this._setFeed('scale');
-  // };
-
-  // this.startFloorHeight = function(callback) {
-  //   if (callback) {
-  //     this.fhCallback = callback;
-  //   }
-
-  //   this._setFeed('fh-joint');
-  // };
 
   // Stop all feeds
   this.stopAll = function () {

@@ -264,15 +264,17 @@ var Kinectron = function Kinectron(arg1, arg2) {
   var AZUREDEPTHHEIGHT = 576;
   var AZURERAWWIDTH = 640 / 2;
   var AZURERAWHEIGHT = 576 / 2;
+  var AZURERGBDWIDTH = 512;
+  var AZURERGBDHEIGHT = 512;
   var colorwidth;
   var colorheight;
   var depthwidth;
   var depthheight;
   var rawdepthwidth;
   var rawdepthheight;
-  var whichKinect = null; // Processing raw depth indicator
-
-  var busy = false; // Running multiframe indicator
+  var rgbdwidth;
+  var rgbdheight;
+  var whichKinect = null; // Running multiframe indicator
 
   var multiFrame = false;
   var currentFrames = []; // Hold initital frame request until peer connection ready
@@ -301,7 +303,8 @@ var Kinectron = function Kinectron(arg1, arg2) {
 
   var timer = false;
   var timeCounter = 0;
-  var sendCounter = 0; // Check for ip address in "quickstart" method
+  var sendCounter = 0;
+  var frameImageURL; // Check for ip address in "quickstart" method
   // If user has provided only first argument
 
   if (typeof arg1 !== 'undefined' && typeof arg2 === 'undefined') {
@@ -441,7 +444,33 @@ var Kinectron = function Kinectron(arg1, arg2) {
         // If image data draw image
 
         case 'frame':
-          this.img.src = data.imagedata;
+          // https://stackoverflow.com/questions/12168909/blob-from-dataurl
+          var dataURI = data.imagedata; // convert base64 to raw binary data held in a string
+          // doesn't handle URLEncoded DataURIs - see SO answer #6850276 for code that does this
+
+          var byteString = atob(dataURI.split(',')[1]); // separate out the mime component
+
+          var mimeString = dataURI.split(',')[0].split(':')[1].split(';')[0]; // write the bytes of the string to an ArrayBuffer
+
+          var ab = new ArrayBuffer(byteString.length); // create a view into the buffer
+
+          var ia = new Uint8Array(ab); // set the bytes of the buffer to the correct values
+
+          for (var i = 0; i < byteString.length; i++) {
+            ia[i] = byteString.charCodeAt(i);
+          } // write the ArrayBuffer to a blob, and you're done
+
+
+          var imageBlob = new Blob([ab], {
+            type: mimeString
+          });
+
+          if (frameImageURL) {
+            URL.revokeObjectURL(frameImageURL);
+          }
+
+          frameImageURL = URL.createObjectURL(imageBlob);
+          this.img.src = frameImageURL;
 
           this.img.onload = function () {
             this._chooseCallback(data.name);
@@ -730,17 +759,7 @@ var Kinectron = function Kinectron(arg1, arg2) {
     }
 
     this._setFeed('rgbd');
-  }; // this.startScale = function(callback) {
-  //   this.callback = callback;
-  //   this._setFeed('scale');
-  // };
-  // this.startFloorHeight = function(callback) {
-  //   if (callback) {
-  //     this.fhCallback = callback;
-  //   }
-  //   this._setFeed('fh-joint');
-  // };
-  // Stop all feeds
+  }; // Stop all feeds
 
 
   this.stopAll = function () {
@@ -894,6 +913,8 @@ var Kinectron = function Kinectron(arg1, arg2) {
       depthheight = AZUREDEPTHHEIGHT;
       rawdepthwidth = AZURERAWWIDTH;
       rawdepthheight = AZURERAWHEIGHT;
+      rgbdwidth = AZURERGBDWIDTH;
+      rgbdheight = AZURERGBDHEIGHT;
     } else if (kinectType === 'windows') {
       colorwidth = WINDOWSCOLORWIDTH;
       colorheight = WINDOWSCOLORHEIGHT;
@@ -1215,7 +1236,7 @@ var parent = module.bundle.parent;
 if ((!parent || !parent.isParcelRequire) && typeof WebSocket !== 'undefined') {
   var hostname = "" || location.hostname;
   var protocol = location.protocol === 'https:' ? 'wss' : 'ws';
-  var ws = new WebSocket(protocol + '://' + hostname + ':' + "61620" + '/');
+  var ws = new WebSocket(protocol + '://' + hostname + ':' + "57903" + '/');
 
   ws.onmessage = function (event) {
     checkedAssets = {};
